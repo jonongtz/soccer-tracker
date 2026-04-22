@@ -523,6 +523,18 @@
 
   let players = [];
 
+  // ✅ Cost per player (rounded UP to 1 decimal place)
+  function getCostPerPlayer() {
+    if (players.length === 0) return 0;
+    return Math.ceil((FIELD_COST / players.length) * 10) / 10;
+  }
+
+  // ✅ Display-ready version (for UI)
+  function getCostPerPlayerDisplay() {
+    return getCostPerPlayer().toFixed(1);
+  }
+
+
   /* ── helpers ── */
   function fmtDate(iso) {
     if (!iso) return "—";
