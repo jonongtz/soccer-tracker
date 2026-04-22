@@ -8,439 +8,151 @@
 
   <style>
     :root {
-      --bg:        #080c10;
-      --surface:   #0f1520;
-      --surface2:  #161e2e;
-      --border:    #1d2d44;
-      --accent:    #00e5ff;
-      --accent2:   #39ff8f;
-      --danger:    #ff3a5c;
-      --text:      #dce8f5;
-      --muted:     #5a7394;
-      --radius:    12px;
+      --bg:#080c10;
+      --surface:#0f1520;
+      --surface2:#161e2e;
+      --border:#1d2d44;
+      --accent:#00e5ff;
+      --accent2:#39ff8f;
+      --danger:#ff3a5c;
+      --text:#dce8f5;
+      --muted:#5a7394;
+      --radius:12px;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
 
     body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
+      font-family:'DM Sans', sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
     }
 
-    /* pitch grid background */
     body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
+      content:'';
+      position:fixed;
+      inset:0;
       background-image:
         linear-gradient(rgba(0,229,255,.025) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0,229,255,.025) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
+      background-size:40px 40px;
+      pointer-events:none;
+      z-index:0;
     }
 
     .container {
-      position: relative;
-      z-index: 1;
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 20px 16px 40px;
+      position:relative;
+      z-index:1;
+      max-width:520px;
+      margin:0 auto;
+      padding:20px 16px 40px;
     }
 
-    /* ── Header ── */
     .app-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 22px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:22px;
     }
-    .app-header .ball { font-size: 28px; }
+    .app-header .ball { font-size:28px; }
     .app-header h1 {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 26px;
-      font-weight: 800;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-      color: var(--accent);
-      text-shadow: 0 0 18px rgba(0,229,255,.4);
+      font-family:'Barlow Condensed', sans-serif;
+      font-size:26px;
+      font-weight:800;
+      color:var(--accent);
+      text-transform:uppercase;
     }
 
-    /* ── Tabs ── */
+    /* Tabs */
     .tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 20px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 4px;
+      display:flex;
+      gap:8px;
+      margin-bottom:20px;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:4px;
     }
+
     .tab-btn {
-      flex: 1;
-      background: transparent;
-      color: var(--muted);
-      border: none;
-      border-radius: 9px;
-      padding: 10px;
-      cursor: pointer;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      transition: background .2s, color .2s, box-shadow .2s;
+      flex:1;
+      background:transparent;
+      color:var(--muted);
+      border:none;
+      border-radius:9px;
+      padding:10px;
+      cursor:pointer;
+      font-family:'Barlow Condensed';
+      font-size:15px;
+      font-weight:700;
+      text-transform:uppercase;
     }
+
     .tab-btn.active {
-      background: var(--accent);
-      color: #000;
-      box-shadow: 0 0 16px rgba(0,229,255,.45);
+      background:var(--accent);
+      color:#000;
     }
 
-    /* ── Card ── */
     .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
-      margin-bottom: 16px;
-    }
-    .card-title {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:18px;
+      margin-bottom:16px;
     }
 
-    /* ── Inputs ── */
-    input[type="date"],
-    input[type="text"] {
-      width: 100%;
-      padding: 10px 14px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      outline: none;
-      transition: border-color .2s;
+    .card-title {
+      font-family:'Barlow Condensed';
+      font-size:18px;
+      font-weight:700;
+      color:var(--accent);
+      margin-bottom:14px;
+      text-transform:uppercase;
     }
-    input[type="date"]:focus,
-    input[type="text"]:focus {
-      border-color: var(--accent);
+
+    input[type="date"], input[type="text"] {
+      width:100%;
+      padding:10px 14px;
+      margin-bottom:10px;
+      border-radius:8px;
+      border:1px solid var(--border);
+      background:var(--bg);
+      color:var(--text);
     }
-    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(.5); }
 
     .add-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 4px;
+      display:flex;
+      gap:8px;
+      margin-bottom:4px;
     }
-    .add-row input { margin-bottom: 0; }
 
     .add-btn {
-      background: var(--accent);
-      color: #000;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 20px;
-      font-weight: bold;
-      flex-shrink: 0;
-      line-height: 1;
-      transition: opacity .2s;
-    }
-    .add-btn:hover { opacity: .8; }
-
-    /* ── Player grid ── */
-    .grid-header,
-    .player-row {
-      display: grid;
-      grid-template-columns: 1fr 52px 52px;
-      align-items: center;
-      column-gap: 8px;
-    }
-    .grid-header {
-      font-size: 11px;
-      font-family: 'Barlow Condensed', sans-serif;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 8px 8px 4px;
-      text-align: center;
-    }
-    .grid-header .col-name { text-align: left; }
-
-    .player-row {
-      padding: 7px 8px;
-      margin-bottom: 3px;
-      border-radius: 8px;
-      background: rgba(255,255,255,.03);
-      transition: background .15s;
-    }
-    .player-row:hover { background: rgba(255,255,255,.055); }
-
-    .player-name-cell {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .player-num {
-      color: var(--accent);
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 700;
-      font-size: 13px;
-      min-width: 20px;
+      background:var(--accent);
+      color:#000;
+      border:none;
+      padding:10px 16px;
+      border-radius:8px;
+      font-size:20px;
+      cursor:pointer;
     }
 
-    /* custom checkboxes */
-    input[type="checkbox"] {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 22px;
-      height: 22px;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-      background: var(--bg);
-      cursor: pointer;
-      display: block;
-      margin: 0 auto;
-      transition: background .15s, border-color .15s;
-      position: relative;
-    }
-    input[type="checkbox"]:checked {
-      background: var(--accent2);
-      border-color: var(--accent2);
-    }
-    input[type="checkbox"]:checked::after {
-      content: '✓';
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
-      color: #000;
-      font-size: 13px;
-      font-weight: bold;
-    }
-
-    /* ── Buttons ── */
     .save-btn {
-      background: var(--accent);
-      color: #000;
-      width: 100%;
-      margin-top: 12px;
-      border-radius: 10px;
-      padding: 12px;
-      border: none;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      cursor: pointer;
-      box-shadow: 0 0 18px rgba(0,229,255,.3);
-      transition: opacity .2s;
-    }
-    .save-btn:hover { opacity: .85; }
-
-    .delete-btn {
-      background: transparent;
-      color: var(--danger);
-      border: 1px solid var(--danger);
-      padding: 7px 12px;
-      border-radius: 7px;
-      cursor: pointer;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      margin-top: 12px;
-      width: 100%;
-      transition: background .2s, color .2s;
-    }
-    .delete-btn:hover { background: var(--danger); color: #fff; }
-
-    /* ── Home summary ── */
-    #homeSummary { display: none; }
-    .summary-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-    .summary-date {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: .04em;
-      color: var(--accent2);
-    }
-    .summary-badge {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 3px 10px;
-      font-size: 12px;
-      color: var(--muted);
-      font-family: 'Barlow Condensed', sans-serif;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-    .stat-pills {
-      display: flex;
-      gap: 8px;
-      margin-top: 4px;
-      flex-wrap: wrap;
-    }
-    .stat-pill {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 13px;
-      color: var(--text);
-    }
-    .stat-pill span { color: var(--accent); font-weight: 600; }
-
-    /* ── Summary editable player grid (4 cols: name, DNP, Paid, del) ── */
-    .summary-grid-header,
-    .summary-player-row {
-      display: grid;
-      grid-template-columns: 1fr 52px 52px 32px;
-      align-items: center;
-      column-gap: 8px;
-    }
-    .summary-grid-header {
-      font-size: 11px;
-      font-family: 'Barlow Condensed', sans-serif;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 8px 8px 4px;
-      text-align: center;
-    }
-    .summary-grid-header .col-name { text-align: left; }
-    .summary-player-row {
-      padding: 4px 8px;
-      margin-bottom: 3px;
-      border-radius: 8px;
-      background: rgba(255,255,255,.03);
-      transition: background .15s;
-      min-height: 38px;
-    }
-    .summary-player-row:hover { background: rgba(255,255,255,.055); }
-
-    .edit-name-input {
-      background: var(--bg);
-      border: 1px solid var(--accent);
-      border-radius: 6px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      padding: 3px 7px;
-      width: 100%;
-      outline: none;
+      background:var(--accent);
+      color:#000;
+      width:100%;
+      margin-top:12px;
+      border:none;
+      border-radius:10px;
+      padding:12px;
+      font-weight:800;
+      text-transform:uppercase;
+      cursor:pointer;
     }
 
-    .icon-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 6px;
-      font-size: 15px;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background .15s;
-      width: 28px;
-      height: 28px;
-      margin: 0 auto;
-    }
-    .icon-btn:hover { background: rgba(255,255,255,.1); }
-    .icon-btn.del  { color: var(--danger); }
-    .icon-btn.edit { color: var(--muted); }
-    .icon-btn.confirm { color: var(--accent2); }
+    #log { display:none; }
+    #newGame { display:none; }
 
-    /* add-player row inside summary */
-    .summary-add-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .summary-add-row input {
-      margin-bottom: 0;
-      flex: 1;
-      padding: 8px 12px;
-      font-size: 14px;
-    }
-    .summary-add-row .add-btn {
-      padding: 8px 14px;
-      font-size: 18px;
-    }
-
-    /* ── Per-pax cost ── */
-    .cost-line {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-      margin-top: 6px;
-    }
-    .cost-label {
-      font-size: 12px;
-      color: var(--muted);
-      font-family: 'Barlow Condensed', sans-serif;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-    .cost-amount {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--accent2);
-      text-shadow: 0 0 12px rgba(57,255,143,.35);
-    }
-    .cost-breakdown {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    /* ── Log cards ── */
-    .log-game-date {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--accent2);
-      margin-bottom: 10px;
-      letter-spacing: .04em;
-    }
-    .log-empty {
-      text-align: center;
-      color: var(--muted);
-      padding: 40px 0;
-      font-family: 'Barlow Condensed', sans-serif;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-
-    /* fade-in animation */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .card { animation: fadeUp .25s ease both; }
   </style>
 </head>
 
@@ -454,35 +166,25 @@
 
   <div class="tabs">
     <button id="homeTab" class="tab-btn active">Home</button>
-    <button id="logTab"  class="tab-btn">Log</button>
+    <button id="newGameTab" class="tab-btn">New Game</button>
+    <button id="logTab" class="tab-btn">Log</button>
   </div>
 
-  <!-- ══ HOME ══ -->
+  <!-- HOME -->
   <div id="home">
-
-    <!-- Latest saved game summary -->
     <div id="homeSummary" class="card">
       <div class="card-title">📋 Game ON!</div>
-      <div class="summary-meta">
-        <div class="summary-date" id="summaryDate">—</div>
-        <div class="summary-badge" id="summaryCount">0 players</div>
-      </div>
-      <div class="cost-line">
-        <span class="cost-label">Per pax</span>
-        <span class="cost-amount" id="summaryCost">—</span>
-        <span class="cost-breakdown" id="summaryCostBreakdown"></span>
-      </div>
-      <div class="stat-pills" id="summaryStats" style="margin-top:8px;"></div>
-      <div id="summaryPlayerList" style="margin-top:12px;"></div>
-      <div class="summary-add-row">
-        <input type="text" id="summaryNewPlayer" placeholder="Add player to this game…">
-        <button class="add-btn" onclick="summaryAddPlayer()">+</button>
-      </div>
+      <div id="summaryDate"></div>
+      <div id="summaryPlayerList"></div>
     </div>
+  </div>
 
-    <!-- Entry form -->
+  <!-- NEW GAME TAB (MOVED HERE) -->
+  <div id="newGame">
+
     <div class="card">
       <div class="card-title">📅 New Game</div>
+
       <input type="date" id="date">
 
       <div class="add-row">
@@ -497,337 +199,70 @@
 
   </div>
 
-  <!-- ══ LOG ══ -->
-  <div id="log" style="display:none;"></div>
+  <!-- LOG -->
+  <div id="log"></div>
 
 </div>
 
 <script type="module">
-  import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  const firebaseConfig = {
+  const app = initializeApp({
     apiKey: "AIzaSyC91k_f2uhFlf-Jg4jfyAgos_AD38jvwGw",
     authDomain: "soccer-tracker-910b4.firebaseapp.com",
-    projectId: "soccer-tracker-910b4",
-    storageBucket: "soccer-tracker-910b4.firebasestorage.app",
-    messagingSenderId: "1021814716916",
-    appId: "1:1021814716916:web:c8007db5a5f7671d04a1a1"
-  };
+    projectId: "soccer-tracker-910b4"
+  });
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-
-  const FIELD_COST = 360; // total cost per game session
+  const db = getFirestore(app);
 
   let players = [];
 
-  /* ── helpers ── */
-  function fmtDate(iso) {
-    if (!iso) return "—";
-    const [y, m, d] = iso.split("-");
-    return new Date(+y, +m - 1, +d).toLocaleDateString("en-SG", {
-      weekday: "short", day: "numeric", month: "short", year: "numeric"
-    });
-  }
-
-  /* ── Tabs ── */
+  /* Tabs */
   document.getElementById("homeTab").onclick = () => switchTab("home");
-  document.getElementById("logTab").onclick  = () => switchTab("log");
+  document.getElementById("newGameTab").onclick = () => switchTab("newGame");
+  document.getElementById("logTab").onclick = () => switchTab("log");
 
   function switchTab(tab) {
     const isHome = tab === "home";
-    document.getElementById("home").style.display    = isHome ? "block" : "none";
-    document.getElementById("log").style.display     = isHome ? "none"  : "block";
-    document.getElementById("homeTab").classList.toggle("active",  isHome);
-    document.getElementById("logTab").classList.toggle("active",  !isHome);
-    if (!isHome) loadLogs();
+    const isNew = tab === "newGame";
+
+    document.getElementById("home").style.display = isHome ? "block" : "none";
+    document.getElementById("newGame").style.display = isNew ? "block" : "none";
+    document.getElementById("log").style.display = (!isHome && !isNew) ? "block" : "none";
+
+    document.getElementById("homeTab").classList.toggle("active", isHome);
+    document.getElementById("newGameTab").classList.toggle("active", isNew);
+    document.getElementById("logTab").classList.toggle("active", !isHome && !isNew);
   }
 
-  /* ── Add / render players ── */
+  /* Players */
   window.addPlayer = function () {
     const input = document.getElementById("playerName");
-    const name  = input.value.trim();
-    if (!name) return;
-    players.push({ name, paid: false, didNotAttend: false });
+    if (!input.value.trim()) return;
+    players.push({ name: input.value.trim(), paid:false, didNotAttend:false });
     input.value = "";
     renderPlayers();
   };
 
-  document.getElementById("playerName").addEventListener("keydown", e => {
-    if (e.key === "Enter") window.addPlayer();
-  });
-
   function renderPlayers() {
     const list = document.getElementById("playerList");
-    if (players.length === 0) { list.innerHTML = ""; return; }
-
-    list.innerHTML = `
-      <div class="grid-header">
-        <div class="col-name">Player</div>
-        <div>DNP</div>
-        <div>Paid</div>
-      </div>
-    `;
-
-    players.forEach((p, i) => {
-      list.innerHTML += `
-        <div class="player-row">
-          <div class="player-name-cell">
-            <span class="player-num">${i + 1}.</span>
-            <span>${p.name}</span>
-          </div>
-          <input type="checkbox" ${p.didNotAttend ? "checked" : ""}
-                 onchange="toggleDNP(${i})">
-          <input type="checkbox" ${p.paid ? "checked" : ""}
-                 onchange="togglePaid(${i})">
-        </div>
-      `;
-    });
+    list.innerHTML = players.map((p,i)=>`
+      <div>${i+1}. ${p.name}</div>
+    `).join("");
   }
 
-  window.togglePaid = i => { players[i].paid = !players[i].paid; renderPlayers(); };
-  window.toggleDNP  = i => { players[i].didNotAttend = !players[i].didNotAttend; renderPlayers(); };
-
-  /* ── Save ── */
   window.saveGame = async function () {
     const date = document.getElementById("date").value;
-    if (!date)              return alert("Please select a date.");
-    if (players.length === 0) return alert("Please add at least one player.");
+    if (!date) return alert("Pick date");
 
-    const docRef = await addDoc(collection(db, "games"), { date, players });
+    await addDoc(collection(db,"games"), { date, players });
 
-    showHomeSummary({ date, players: [...players] }, docRef.id);
-
+    alert("Saved!");
     players = [];
     renderPlayers();
-    document.getElementById("date").value = "";
   };
-
-  /* ── Firestore helpers ── */
-  let { updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-
-  async function savePlayersToDoc(docId, updatedPlayers) {
-    await updateDoc(doc(db, "games", docId), { players: updatedPlayers });
-  }
-
-  async function getDocPlayers(docId) {
-    const snap = await getDocs(query(collection(db, "games"), orderBy("date", "desc")));
-    const target = snap.docs.find(d => d.id === docId);
-    return target ? [...target.data().players] : [];
-  }
-
-  /* ── Home summary state ── */
-  let summaryDocId   = null;
-  let summaryGame    = null; // { date, players[] }
-  let editingIndex   = null; // which row is in edit mode
-
-  /* ── Show / refresh home summary ── */
-  function showHomeSummary(game, docId) {
-    summaryDocId = docId;
-    summaryGame  = { date: game.date, players: game.players.map(p => ({ ...p })) };
-    editingIndex = null;
-    renderSummary();
-  }
-
-  function renderSummary() {
-    if (!summaryGame) return;
-
-    document.getElementById("homeSummary").style.display = "block";
-    document.getElementById("summaryDate").textContent   = fmtDate(summaryGame.date);
-    document.getElementById("summaryCount").textContent  =
-      `${summaryGame.players.length} player${summaryGame.players.length !== 1 ? "s" : ""}`;
-
-    const played = summaryGame.players.filter(p => !p.didNotAttend).length;
-    const perPax = played > 0 ? Math.ceil((FIELD_COST / played) * 10) / 10: 0;
-    document.getElementById("summaryCost").textContent          = played > 0 ? `$${perPax}` : "—";
-    document.getElementById("summaryCostBreakdown").textContent = played > 0 ? `($${FIELD_COST} ÷ ${played} players)` : "";
-
-    const paid   = summaryGame.players.filter(p =>  p.paid).length;
-    const unpaid = summaryGame.players.filter(p => !p.paid && !p.didNotAttend).length;
-    const dnp    = summaryGame.players.filter(p =>  p.didNotAttend).length;
-    document.getElementById("summaryStats").innerHTML = `
-      <div class="stat-pill">Paid <span>${paid}</span></div>
-      <div class="stat-pill">Unpaid <span>${unpaid}</span></div>
-      <div class="stat-pill">DNP <span>${dnp}</span></div>
-    `;
-
-    const listEl = document.getElementById("summaryPlayerList");
-    let html = `
-      <div class="summary-grid-header">
-        <div class="col-name">Player</div>
-        <div>DNP</div>
-        <div>Paid</div>
-        <div></div>
-      </div>
-    `;
-
-    summaryGame.players.forEach((p, i) => {
-      const isEditing = editingIndex === i;
-      const nameCell = isEditing
-        ? `<input class="edit-name-input" id="editNameInput" value="${p.name}"
-                  onkeydown="if(event.key==='Enter')confirmEdit(${i})">`
-        : `<div class="player-name-cell">
-             <span class="player-num">${i + 1}.</span>
-             <span>${p.name}</span>
-           </div>`;
-
-      const actionBtn = isEditing
-        ? `<button class="icon-btn confirm" title="Confirm" onclick="confirmEdit(${i})">✓</button>`
-        : `<button class="icon-btn del"  title="Delete"  onclick="summaryDeletePlayer(${i})">✕</button>`;
-
-      html += `
-        <div class="summary-player-row" ondblclick="startEdit(${i})">
-          ${nameCell}
-          <input type="checkbox" ${p.didNotAttend ? "checked" : ""}
-                 onchange="summaryToggle(${i},'didNotAttend',this.checked)">
-          <input type="checkbox" ${p.paid ? "checked" : ""}
-                 onchange="summaryToggle(${i},'paid',this.checked)">
-          ${actionBtn}
-        </div>
-      `;
-    });
-
-    listEl.innerHTML = html;
-    if (editingIndex !== null) {
-      const inp = document.getElementById("editNameInput");
-      if (inp) { inp.focus(); inp.select(); }
-    }
-  }
-
-  /* ── Summary: toggle checkbox ── */
-  window.summaryToggle = async function (i, field, value) {
-    summaryGame.players[i][field] = value;
-    renderSummary();
-    await savePlayersToDoc(summaryDocId, summaryGame.players);
-  };
-
-  /* ── Summary: start inline edit on double-click ── */
-  window.startEdit = function (i) {
-    editingIndex = i;
-    renderSummary();
-  };
-
-  /* ── Summary: confirm name edit ── */
-  window.confirmEdit = async function (i) {
-    const inp = document.getElementById("editNameInput");
-    const newName = inp ? inp.value.trim() : "";
-    if (newName) summaryGame.players[i].name = newName;
-    editingIndex = null;
-    renderSummary();
-    await savePlayersToDoc(summaryDocId, summaryGame.players);
-  };
-
-  /* ── Summary: delete player ── */
-  window.summaryDeletePlayer = async function (i) {
-    summaryGame.players.splice(i, 1);
-    editingIndex = null;
-    renderSummary();
-    await savePlayersToDoc(summaryDocId, summaryGame.players);
-  };
-
-  /* ── Summary: add new player ── */
-  window.summaryAddPlayer = async function () {
-    const inp = document.getElementById("summaryNewPlayer");
-    const name = inp.value.trim();
-    if (!name) return;
-    summaryGame.players.push({ name, paid: false, didNotAttend: false });
-    inp.value = "";
-    renderSummary();
-    await savePlayersToDoc(summaryDocId, summaryGame.players);
-  };
-
-  document.getElementById("summaryNewPlayer").addEventListener("keydown", e => {
-    if (e.key === "Enter") window.summaryAddPlayer();
-  });
-
-  window.updateLogPlayer = async function (docId, i, field, value) {
-    const players = await getDocPlayers(docId);
-    if (!players[i]) return;
-    players[i][field] = value;
-    await savePlayersToDoc(docId, players);
-    loadLogs();
-  };
-
-  /* ── Log ── */
-  async function loadLogs() {
-    const logDiv = document.getElementById("log");
-    logDiv.innerHTML = "";
-
-    const snapshot = await getDocs(query(collection(db, "games"), orderBy("date", "desc")));
-
-    if (snapshot.empty) {
-      logDiv.innerHTML = `<div class="log-empty">No games logged yet</div>`;
-      return;
-    }
-
-    snapshot.forEach(docSnap => {
-      const { date, players: ps } = docSnap.data();
-      const id = docSnap.id;
-
-      const played = ps.filter(p => !p.didNotAttend).length;
-      const perPax = played > 0 ? Math.ceil(FIELD_COST / played) : 0;
-      const paid   = ps.filter(p =>  p.paid).length;
-      const dnp    = ps.filter(p =>  p.didNotAttend).length;
-
-      const costHtml = played > 0
-        ? `<div class="cost-line" style="margin-bottom:10px;">
-             <span class="cost-label">Per pax</span>
-             <span class="cost-amount">$${perPax}</span>
-             <span class="cost-breakdown">($${FIELD_COST} ÷ ${played} players)</span>
-           </div>`
-        : "";
-
-      let rows = ps.map((p, i) => `
-        <div class="player-row">
-          <div class="player-name-cell">
-            <span class="player-num">${i + 1}.</span>
-            <span>${p.name}</span>
-          </div>
-          <input type="checkbox" ${p.didNotAttend ? "checked" : ""}
-                 onchange="updateLogPlayer('${id}', ${i}, 'didNotAttend', this.checked)">
-          <input type="checkbox" ${p.paid ? "checked" : ""}
-                 onchange="updateLogPlayer('${id}', ${i}, 'paid', this.checked)">
-        </div>
-      `).join("");
-
-      logDiv.innerHTML += `
-        <div class="card">
-          <div class="log-game-date">${fmtDate(date)}</div>
-          ${costHtml}
-          <div class="stat-pills" style="margin-bottom:10px;">
-            <div class="stat-pill"><span>${ps.length}</span> players</div>
-            <div class="stat-pill">Paid <span>${paid}</span></div>
-            <div class="stat-pill">DNP <span>${dnp}</span></div>
-          </div>
-          <div class="grid-header">
-            <div class="col-name">Player</div>
-            <div>DNP</div>
-            <div>Paid</div>
-          </div>
-          ${rows}
-          <button class="delete-btn" onclick="deleteGame('${id}')">🗑 Delete Game</button>
-        </div>
-      `;
-    });
-  }
-
-  /* ── Delete ── */
-  window.deleteGame = async function (id) {
-    if (!confirm("Delete this game? This cannot be undone.")) return;
-    await deleteDoc(doc(db, "games", id));
-    loadLogs();
-  };
-
-  /* ── On load: show latest saved game in home summary ── */
-  (async () => {
-    const snapshot = await getDocs(query(collection(db, "games"), orderBy("date", "desc")));
-    if (!snapshot.empty) {
-      const latest = snapshot.docs[0];
-      showHomeSummary(latest.data(), latest.id);
-    }
-  })();
 
 </script>
 </body>
