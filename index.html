@@ -18,6 +18,7 @@
       padding: 16px;
     }
 
+    /* TABS */
     .tabs {
       display: flex;
       gap: 10px;
@@ -40,6 +41,7 @@
       box-shadow: 0 0 10px #00f7ff;
     }
 
+    /* CARDS */
     .card {
       background: #111827;
       padding: 16px;
@@ -59,6 +61,7 @@
       font-size: 16px;
     }
 
+    /* PLAYER ROW */
     .row {
       display: flex;
       justify-content: space-between;
@@ -67,6 +70,7 @@
       margin-bottom: 4px;
       border-radius: 8px;
       background: rgba(255,255,255,0.03);
+      gap: 8px;
     }
 
     .left {
@@ -74,6 +78,7 @@
       gap: 8px;
       align-items: center;
       flex: 1;
+      min-width: 0;
     }
 
     .number {
@@ -82,6 +87,7 @@
       min-width: 22px;
     }
 
+    /* BUTTONS */
     .add-btn {
       background: #00f7ff;
       color: black;
@@ -112,6 +118,15 @@
       cursor: pointer;
     }
 
+    /* CHECKBOX AREA */
+    .checkbox-inline {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    /* SUMMARY */
     .summary-box {
       margin-top: 12px;
       padding: 12px;
@@ -136,25 +151,6 @@
       padding-right: 10px;
     }
 
-    .checkbox-inline {
-      display: flex;
-      gap: 18px;
-      align-items: center;
-    }
-
-    .stats {
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      background: rgba(0,255,255,0.05);
-      font-size: 13px;
-      color: #cbd5e1;
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
     .delete-btn {
       background: #ff2d2d;
       color: white;
@@ -164,6 +160,30 @@
       cursor: pointer;
       margin-top: 10px;
     }
+
+    .stats {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(0,255,255,0.05);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    /* MOBILE FIX */
+    @media (max-width: 480px) {
+      .row {
+        flex-wrap: wrap;
+      }
+
+      .checkbox-inline {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
   </style>
 </head>
 
@@ -171,6 +191,7 @@
 
 <div class="container">
 
+  <!-- TABS -->
   <div class="tabs">
     <button id="homeTab" class="tab-btn active">Home</button>
     <button id="logTab" class="tab-btn">Log</button>
@@ -201,6 +222,7 @@
 
 </div>
 
+<!-- FIREBASE -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -217,21 +239,28 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  const GAME_COST = 360;
-
   let players = [];
 
+  /* ---------------- TABS FIX ---------------- */
   homeTab.onclick = () => {
     home.style.display = "block";
     log.style.display = "none";
+
+    homeTab.classList.add("active");
+    logTab.classList.remove("active");
   };
 
   logTab.onclick = () => {
     home.style.display = "none";
     log.style.display = "block";
+
+    logTab.classList.add("active");
+    homeTab.classList.remove("active");
+
     loadLogs();
   };
 
+  /* ---------------- PLAYERS ---------------- */
   window.addPlayer = function () {
     const name = document.getElementById("playerName").value;
     if (!name) return;
@@ -273,12 +302,12 @@
     renderPlayers();
   };
 
+  /* ---------------- SAVE + SUMMARY ---------------- */
   function calcStats(players) {
     const total = players.length;
     const dnp = players.filter(p => p.didNotAttend).length;
     const attended = Math.max(total - dnp, 1);
-    const perPax = (GAME_COST / attended).toFixed(2);
-
+    const perPax = (360 / attended).toFixed(2);
     return { total, attended, perPax };
   }
 
@@ -311,9 +340,9 @@
 
     html += `
       <div class="stats">
-        <div>👥 Total: ${stats.total}</div>
-        <div>✅ Attended: ${stats.attended}</div>
-        <div>💰 Per Pax: $${stats.perPax}</div>
+        <div>👥 ${stats.total}</div>
+        <div>✅ ${stats.attended}</div>
+        <div>💰 $${stats.perPax}</div>
       </div>
     `;
 
@@ -335,6 +364,7 @@
     loadLogs();
   };
 
+  /* ---------------- LOGS ---------------- */
   async function loadLogs() {
     const snapshot = await getDocs(collection(db, "games"));
     const logDiv = document.getElementById("log");
@@ -342,7 +372,6 @@
 
     snapshot.forEach(docSnap => {
       const game = docSnap.data();
-      const id = docSnap.id;
 
       const stats = calcStats(game.players);
 
@@ -374,20 +403,12 @@
           <div>✅ ${stats.attended}</div>
           <div>💰 $${stats.perPax}</div>
         </div>
-
-        <button class="delete-btn" onclick="deleteGame('${id}')">Delete Game</button>
         </div>
       `;
 
       logDiv.innerHTML += html;
     });
   }
-
-  window.deleteGame = async function (id) {
-    if (!confirm("Delete this game?")) return;
-    await deleteDoc(doc(db, "games", id));
-    loadLogs();
-  };
 
 </script>
 
