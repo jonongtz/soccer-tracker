@@ -387,10 +387,50 @@
       from { opacity: 0; transform: translateY(12px); }
       to   { opacity: 1; transform: translateY(0); }
     }
+
+    /* ── Pull to refresh ── */
+    #pullIndicator {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 0;
+      overflow: hidden;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      z-index: 50;
+      transition: height .2s ease;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    #pullIndicator.visible { height: 52px; }
+    #pullIndicator.releasing { color: var(--accent); }
+    #pullSpinner {
+      font-size: 18px;
+      transition: transform .2s ease;
+    }
+    #pullIndicator.releasing #pullSpinner { transform: rotate(180deg); }
+    #pullIndicator.refreshing #pullSpinner {
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 
 <body>
+
+<!-- ── Pull to refresh indicator ── -->
+<div id="pullIndicator">
+  <span id="pullSpinner">↓</span>
+  <span id="pullLabel">Pull to refresh</span>
+</div>
 
 <!-- ── PIN overlay ── -->
 <div class="pin-overlay" id="pinOverlay">
@@ -574,8 +614,9 @@
     if (val === PIN) {
       if (pinTarget === "newGame") newGameUnlocked = true;
       if (pinTarget === "log")     logUnlocked     = true;
+      const dest = pinTarget; // capture before closePinOverlay clears it
       closePinOverlay();
-      switchTab(pinTarget);
+      switchTab(dest);
     } else {
       const inp = document.getElementById("pinInput");
       inp.classList.add("error");
@@ -861,6 +902,90 @@
       const latest = snapshot.docs[0];
       showHomeSummary(latest.data(), latest.id);
     }
+  })();
+
+  /* ════════════════════════════════════
+     PULL TO REFRESH
+  ════════════════════════════════════ */
+  async function refreshCurrentTab() {
+    const indicator = document.getElementById("pullIndicator");
+    const spinner   = document.getElementById("pullSpinner");
+    const label     = document.getElementById("pullLabel");
+
+    indicator.className = "visible refreshing";
+    spinner.textContent = "↻";
+    label.textContent   = "Refreshing…";
+
+    try {
+      // Always refresh weather
+      await loadWeather();
+
+      // Refresh tab-specific data
+      const activeTab = ["home","newGame","log"].find(id =>
+        document.getElementById(id).style.display !== "none"
+      );
+
+      if (activeTab === "home" || activeTab === "newGame") {
+        // Reload latest summary from Firestore
+        const snapshot = await getDocs(query(collection(db, "games"), orderBy("date","desc")));
+        if (!snapshot.empty) {
+          const latest = snapshot.docs[0];
+          showHomeSummary(latest.data(), latest.id);
+        }
+      }
+      if (activeTab === "log") {
+        await loadLogs();
+      }
+    } catch (e) {
+      console.error("Refresh error:", e);
+    }
+
+    indicator.className = "visible";
+    spinner.textContent = "✓";
+    label.textContent   = "Updated";
+    setTimeout(() => { indicator.className = ""; spinner.textContent = "↓"; }, 800);
+  }
+
+  (() => {
+    let startY      = 0;
+    let pulling     = false;
+    let triggered   = false;
+    const THRESHOLD = 72;
+    const indicator = document.getElementById("pullIndicator");
+    const label     = document.getElementById("pullLabel");
+
+    document.addEventListener("touchstart", e => {
+      if (window.scrollY === 0) {
+        startY  = e.touches[0].clientY;
+        pulling = true;
+        triggered = false;
+      }
+    }, { passive: true });
+
+    document.addEventListener("touchmove", e => {
+      if (!pulling) return;
+      const delta = e.touches[0].clientY - startY;
+      if (delta <= 0) { pulling = false; indicator.className = ""; return; }
+
+      const progress = Math.min(delta, THRESHOLD * 1.5);
+      if (progress > 10) {
+        indicator.className = progress >= THRESHOLD ? "visible releasing" : "visible";
+        label.textContent   = progress >= THRESHOLD ? "Release to refresh" : "Pull to refresh";
+        document.getElementById("pullSpinner").textContent = progress >= THRESHOLD ? "↑" : "↓";
+        triggered = progress >= THRESHOLD;
+      }
+    }, { passive: true });
+
+    document.addEventListener("touchend", () => {
+      if (!pulling) return;
+      pulling = false;
+      if (triggered) {
+        refreshCurrentTab();
+      } else {
+        indicator.className = "";
+      }
+      triggered = false;
+    }, { passive: true });
   })();
 
 </script>
