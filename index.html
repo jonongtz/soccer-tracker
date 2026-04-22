@@ -13,7 +13,7 @@
     }
 
     .container {
-      max-width: 500px;
+      max-width: 520px;
       margin: auto;
       padding: 16px;
     }
@@ -113,8 +113,28 @@
       cursor: pointer;
     }
 
-    h3, h4 {
-      margin-top: 0;
+    .summary-box {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #0f172a;
+      border: 1px solid #1f2937;
+    }
+
+    .summary-title {
+      color: #00f7ff;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .delete-btn {
+      background: #ff2d2d;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
     }
   </style>
 </head>
@@ -123,7 +143,7 @@
 
 <div class="container">
 
-  <!-- Tabs -->
+  <!-- TABS -->
   <div class="tabs">
     <button id="homeTab" class="tab-btn active">Home</button>
     <button id="logTab" class="tab-btn">Log</button>
@@ -144,6 +164,8 @@
       <div id="playerList"></div>
 
       <button class="save-btn" onclick="saveGame()">Save Game</button>
+
+      <div id="summary" class="summary-box" style="display:none;"></div>
     </div>
   </div>
 
@@ -155,7 +177,7 @@
 <!-- FIREBASE -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC91k_f2uhFlf-Jg4jfyAgos_AD38jvwGw",
@@ -192,7 +214,7 @@
     const name = document.getElementById("playerName").value;
     if (!name) return;
 
-    players.push({ name, paid: false });
+    players.push({ name, paid: false, didNotAttend: false });
     document.getElementById("playerName").value = "";
     renderPlayers();
   };
@@ -208,7 +230,6 @@
             <span class="number">${i + 1}.</span>
             <span>${p.name}</span>
           </div>
-
           <div>
             <input type="checkbox" ${p.paid ? "checked" : ""} onchange="togglePaid(${i})">
             <button class="small-btn" onclick="deletePlayer(${i})">X</button>
@@ -228,7 +249,38 @@
     renderPlayers();
   };
 
-  // Save game
+  function formatDate(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      weekday: 'short'
+    });
+  }
+
+  function showSummary(date, players) {
+    const summary = document.getElementById("summary");
+    summary.style.display = "block";
+
+    let html = `<div class="summary-title">${formatDate(date)}</div>`;
+
+    players.forEach(p => {
+      html += `
+        <div class="row">
+          <span>${p.name}</span>
+          <div>
+            <label><input type="checkbox" ${p.didNotAttend ? "checked" : ""}> DNP</label>
+            <label><input type="checkbox" ${p.paid ? "checked" : ""}> Paid</label>
+          </div>
+        </div>
+      `;
+    });
+
+    summary.innerHTML = html;
+  }
+
+  // SAVE GAME
   window.saveGame = async function () {
     const date = document.getElementById("date").value;
 
@@ -242,13 +294,16 @@
       players
     });
 
-    alert("Saved!");
+    showSummary(date, players);
+
     players = [];
     renderPlayers();
     document.getElementById("date").value = "";
+
+    loadLogs();
   };
 
-  // Load logs
+  // LOAD LOGS
   async function loadLogs() {
     const snapshot = await getDocs(collection(db, "games"));
     const logDiv = document.getElementById("log");
@@ -258,42 +313,52 @@
       const game = docSnap.data();
       const id = docSnap.id;
 
-      let html = `<div class="card"><h4>${game.date}</h4>`;
+      let html = `<div class="card">
+        <h4>${formatDate(game.date)}</h4>`;
 
       game.players.forEach((p, i) => {
         html += `
           <div class="row">
-            <div class="player-name">
-              <span class="number">${i + 1}.</span>
-              <span>${p.name}</span>
+            <span>${i + 1}. ${p.name}</span>
+            <div>
+              <input type="checkbox" ${p.didNotAttend ? "checked" : ""} onchange="toggleLog('${id}', ${i}, 'didNotAttend', this.checked)"> DNP
+              <input type="checkbox" ${p.paid ? "checked" : ""} onchange="toggleLog('${id}', ${i}, 'paid', this.checked)"> Paid
             </div>
-
-            <input type="checkbox" ${p.paid ? "checked" : ""} onchange="toggleLog('${id}', ${i}, ${!p.paid})">
           </div>
         `;
       });
 
-      html += "</div>";
+      html += `
+        <button class="delete-btn" onclick="deleteGame('${id}')">Delete Game</button>
+      </div>`;
+
       logDiv.innerHTML += html;
     });
   }
 
-  window.toggleLog = async function (gameId, index, value) {
+  window.toggleLog = async function (gameId, index, field, value) {
     const snapshot = await getDocs(collection(db, "games"));
 
     let gameData;
     snapshot.forEach(docSnap => {
-      if (docSnap.id === gameId) {
-        gameData = docSnap.data();
-      }
+      if (docSnap.id === gameId) gameData = docSnap.data();
     });
 
-    gameData.players[index].paid = value;
+    gameData.players[index][field] = value;
 
     await updateDoc(doc(db, "games", gameId), {
       players: gameData.players
     });
 
+    loadLogs();
+  };
+
+  // DELETE GAME
+  window.deleteGame = async function (gameId) {
+    const confirmDelete = confirm("Delete this game? This cannot be undone.");
+    if (!confirmDelete) return;
+
+    await deleteDoc(doc(db, "games", gameId));
     loadLogs();
   };
 
