@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soccer Tracker</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0b0f14;
+      color: #e6f1ff;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 16px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: #111827;
+      color: #9ca3af;
+      border-radius: 10px;
+      padding: 10px;
+      border: 1px solid #1f2937;
+      cursor: pointer;
+    }
+
+    .active {
+      background: #00f7ff;
+      color: black;
+      box-shadow: 0 0 10px #00f7ff;
+    }
+
+    .card {
+      background: #111827;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      border: 1px solid #1f2937;
+      box-shadow: 0 0 15px rgba(0,255,255,0.08);
+    }
+
+    input {
+      padding: 10px;
+      width: 100%;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: 1px solid #1f2937;
+      background: #0b0f14;
+      color: white;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .player-name {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .number {
+      color: #00f7ff;
+      font-weight: bold;
+      min-width: 24px;
+    }
+
+    .add-btn {
+      background: #00f7ff;
+      color: black;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .save-btn {
+      background: #00f7ff;
+      color: black;
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 10px;
+      padding: 10px;
+      border: none;
+      font-weight: bold;
+      box-shadow: 0 0 10px #00f7ff;
+      cursor: pointer;
+    }
+
+    .small-btn {
+      background: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    h3, h4 {
+      margin-top: 0;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button id="homeTab" class="tab-btn active">Home</button>
+    <button id="logTab" class="tab-btn">Log</button>
+  </div>
+
+  <!-- HOME -->
+  <div id="home">
+    <div class="card">
+      <h3>This Week's Game</h3>
+
+      <input type="date" id="date">
+
+      <div style="display:flex; gap:6px;">
+        <input id="playerName" placeholder="Player name">
+        <button class="add-btn" onclick="addPlayer()">+</button>
+      </div>
+
+      <div id="playerList"></div>
+
+      <button class="save-btn" onclick="saveGame()">Save Game</button>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div id="log" style="display:none;"></div>
+
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC91k_f2uhFlf-Jg4jfyAgos_AD38jvwGw",
+    authDomain: "soccer-tracker-910b4.firebaseapp.com",
+    projectId: "soccer-tracker-910b4",
+    storageBucket: "soccer-tracker-910b4.firebasestorage.app",
+    messagingSenderId: "1021814716916",
+    appId: "1:1021814716916:web:c8007db5a5f7671d04a1a1"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  let players = [];
+
+  // Tabs
+  homeTab.onclick = () => {
+    home.style.display = "block";
+    log.style.display = "none";
+    homeTab.classList.add("active");
+    logTab.classList.remove("active");
+  };
+
+  logTab.onclick = () => {
+    home.style.display = "none";
+    log.style.display = "block";
+    logTab.classList.add("active");
+    homeTab.classList.remove("active");
+    loadLogs();
+  };
+
+  // Add player
+  window.addPlayer = function () {
+    const name = document.getElementById("playerName").value;
+    if (!name) return;
+
+    players.push({ name, paid: false });
+    document.getElementById("playerName").value = "";
+    renderPlayers();
+  };
+
+  function renderPlayers() {
+    const list = document.getElementById("playerList");
+    list.innerHTML = "";
+
+    players.forEach((p, i) => {
+      list.innerHTML += `
+        <div class="row">
+          <div class="player-name">
+            <span class="number">${i + 1}.</span>
+            <span>${p.name}</span>
+          </div>
+
+          <div>
+            <input type="checkbox" ${p.paid ? "checked" : ""} onchange="togglePaid(${i})">
+            <button class="small-btn" onclick="deletePlayer(${i})">X</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  window.togglePaid = function (i) {
+    players[i].paid = !players[i].paid;
+    renderPlayers();
+  };
+
+  window.deletePlayer = function (i) {
+    players.splice(i, 1);
+    renderPlayers();
+  };
+
+  // Save game
+  window.saveGame = async function () {
+    const date = document.getElementById("date").value;
+
+    if (!date || players.length === 0) {
+      alert("Enter date and players");
+      return;
+    }
+
+    await addDoc(collection(db, "games"), {
+      date,
+      players
+    });
+
+    alert("Saved!");
+    players = [];
+    renderPlayers();
+    document.getElementById("date").value = "";
+  };
+
+  // Load logs
+  async function loadLogs() {
+    const snapshot = await getDocs(collection(db, "games"));
+    const logDiv = document.getElementById("log");
+    logDiv.innerHTML = "";
+
+    snapshot.forEach(docSnap => {
+      const game = docSnap.data();
+      const id = docSnap.id;
+
+      let html = `<div class="card"><h4>${game.date}</h4>`;
+
+      game.players.forEach((p, i) => {
+        html += `
+          <div class="row">
+            <div class="player-name">
+              <span class="number">${i + 1}.</span>
+              <span>${p.name}</span>
+            </div>
+
+            <input type="checkbox" ${p.paid ? "checked" : ""} onchange="toggleLog('${id}', ${i}, ${!p.paid})">
+          </div>
+        `;
+      });
+
+      html += "</div>";
+      logDiv.innerHTML += html;
+    });
+  }
+
+  window.toggleLog = async function (gameId, index, value) {
+    const snapshot = await getDocs(collection(db, "games"));
+
+    let gameData;
+    snapshot.forEach(docSnap => {
+      if (docSnap.id === gameId) {
+        gameData = docSnap.data();
+      }
+    });
+
+    gameData.players[index].paid = value;
+
+    await updateDoc(doc(db, "games", gameId), {
+      players: gameData.players
+    });
+
+    loadLogs();
+  };
+
+</script>
+
+</body>
+</html>
