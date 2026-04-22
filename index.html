@@ -534,7 +534,30 @@
 
   /* ── Tabs ── */
   document.getElementById("homeTab").onclick = () => switchTab("home");
-  document.getElementById("logTab").onclick  = () => switchTab("log");
+  
+  /* =========================
+     🔐 PIN LOCK (ADDED)
+  ========================== */
+/(old code) document.getElementById("logTab").onclick  = () => switchTab("log");/
+
+ let logUnlocked = false;
+
+  document.getElementById("logTab").onclick = () => {
+    if (!logUnlocked) {
+      const pin = prompt("Enter PIN to access Log:");
+      const correctPin = "TURF";
+
+      if (pin !== correctPin) {
+        alert("Incorrect PIN");
+        return;
+      }
+
+      logUnlocked = true;
+    }
+
+    switchTab("log");
+  };
+
 
   function switchTab(tab) {
     const isHome = tab === "home";
