@@ -313,6 +313,32 @@
     }
     .stat-pill span { color: var(--accent); font-weight: 600; }
 
+    /* ── Per-pax cost ── */
+    .cost-line {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .cost-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .cost-amount {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--accent2);
+      text-shadow: 0 0 12px rgba(57,255,143,.35);
+    }
+    .cost-breakdown {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
     /* ── Log cards ── */
     .log-game-date {
       font-family: 'Barlow Condensed', sans-serif;
@@ -363,7 +389,12 @@
         <div class="summary-date" id="summaryDate">—</div>
         <div class="summary-badge" id="summaryCount">0 players</div>
       </div>
-      <div class="stat-pills" id="summaryStats"></div>
+      <div class="cost-line">
+        <span class="cost-label">Per pax</span>
+        <span class="cost-amount" id="summaryCost">—</span>
+        <span class="cost-breakdown" id="summaryCostBreakdown"></span>
+      </div>
+      <div class="stat-pills" id="summaryStats" style="margin-top:8px;"></div>
       <div id="summaryPlayerList" style="margin-top:12px;"></div>
     </div>
 
@@ -405,6 +436,8 @@
 
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
+
+  const FIELD_COST = 360; // total cost per game session
 
   let players = [];
 
@@ -481,9 +514,9 @@
     if (!date)              return alert("Please select a date.");
     if (players.length === 0) return alert("Please add at least one player.");
 
-    await addDoc(collection(db, "games"), { date, players });
+    const docRef = await addDoc(collection(db, "games"), { date, players });
 
-    showHomeSummary({ date, players: [...players] });
+    showHomeSummary({ date, players: [...players] }, docRef.id);
 
     players = [];
     renderPlayers();
@@ -491,15 +524,22 @@
   };
 
   /* ── Home summary (shows last saved game) ── */
-  function showHomeSummary(game) {
+  function showHomeSummary(game, docId) {
     document.getElementById("homeSummary").style.display = "block";
     document.getElementById("summaryDate").textContent   = fmtDate(game.date);
     document.getElementById("summaryCount").textContent  =
       `${game.players.length} player${game.players.length !== 1 ? "s" : ""}`;
 
-    const paid  = game.players.filter(p =>  p.paid).length;
-    const unpaid= game.players.filter(p => !p.paid && !p.didNotAttend).length;
-    const dnp   = game.players.filter(p =>  p.didNotAttend).length;
+    const played = game.players.filter(p => !p.didNotAttend).length;
+    const perPax = played > 0 ? Math.ceil(FIELD_COST / played) : 0;
+
+    document.getElementById("summaryCost").textContent = played > 0 ? `$${perPax}` : "—";
+    document.getElementById("summaryCostBreakdown").textContent =
+      played > 0 ? `($${FIELD_COST} ÷ ${played} players)` : "";
+
+    const paid   = game.players.filter(p =>  p.paid).length;
+    const unpaid = game.players.filter(p => !p.paid && !p.didNotAttend).length;
+    const dnp    = game.players.filter(p =>  p.didNotAttend).length;
 
     document.getElementById("summaryStats").innerHTML = `
       <div class="stat-pill">Paid <span>${paid}</span></div>
@@ -522,12 +562,39 @@
             <span class="player-num">${i + 1}.</span>
             <span>${p.name}</span>
           </div>
-          <input type="checkbox" ${p.didNotAttend ? "checked" : ""} disabled>
-          <input type="checkbox" ${p.paid ? "checked" : ""} disabled>
+          <input type="checkbox" ${p.didNotAttend ? "checked" : ""}
+                 onchange="updateSummaryPlayer('${docId}', ${i}, 'didNotAttend', this.checked)">
+          <input type="checkbox" ${p.paid ? "checked" : ""}
+                 onchange="updateSummaryPlayer('${docId}', ${i}, 'paid', this.checked)">
         </div>
       `;
     });
   }
+
+  /* ── Update a player field in Firestore ── */
+  async function updatePlayerField(docId, playerIndex, field, value) {
+    const ref = doc(db, "games", docId);
+    const snap = await getDocs(query(collection(db, "games"), orderBy("date", "desc")));
+    const target = snap.docs.find(d => d.id === docId);
+    if (!target) return;
+    const updated = [...target.data().players];
+    updated[playerIndex] = { ...updated[playerIndex], [field]: value };
+    const { updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+    await updateDoc(ref, { players: updated });
+  }
+
+  window.updateSummaryPlayer = async function (docId, i, field, value) {
+    await updatePlayerField(docId, i, field, value);
+    // refresh summary stats without full re-render
+    const snap = await getDocs(query(collection(db, "games"), orderBy("date", "desc")));
+    const target = snap.docs.find(d => d.id === docId);
+    if (target) showHomeSummary(target.data(), docId);
+  };
+
+  window.updateLogPlayer = async function (docId, i, field, value) {
+    await updatePlayerField(docId, i, field, value);
+    loadLogs();
+  };
 
   /* ── Log ── */
   async function loadLogs() {
@@ -545,8 +612,18 @@
       const { date, players: ps } = docSnap.data();
       const id = docSnap.id;
 
-      const paid  = ps.filter(p =>  p.paid).length;
-      const dnp   = ps.filter(p =>  p.didNotAttend).length;
+      const played = ps.filter(p => !p.didNotAttend).length;
+      const perPax = played > 0 ? Math.ceil(FIELD_COST / played) : 0;
+      const paid   = ps.filter(p =>  p.paid).length;
+      const dnp    = ps.filter(p =>  p.didNotAttend).length;
+
+      const costHtml = played > 0
+        ? `<div class="cost-line" style="margin-bottom:10px;">
+             <span class="cost-label">Per pax</span>
+             <span class="cost-amount">$${perPax}</span>
+             <span class="cost-breakdown">($${FIELD_COST} ÷ ${played} players)</span>
+           </div>`
+        : "";
 
       let rows = ps.map((p, i) => `
         <div class="player-row">
@@ -554,14 +631,17 @@
             <span class="player-num">${i + 1}.</span>
             <span>${p.name}</span>
           </div>
-          <input type="checkbox" ${p.didNotAttend ? "checked" : ""} disabled>
-          <input type="checkbox" ${p.paid ? "checked" : ""} disabled>
+          <input type="checkbox" ${p.didNotAttend ? "checked" : ""}
+                 onchange="updateLogPlayer('${id}', ${i}, 'didNotAttend', this.checked)">
+          <input type="checkbox" ${p.paid ? "checked" : ""}
+                 onchange="updateLogPlayer('${id}', ${i}, 'paid', this.checked)">
         </div>
       `).join("");
 
       logDiv.innerHTML += `
         <div class="card">
           <div class="log-game-date">${fmtDate(date)}</div>
+          ${costHtml}
           <div class="stat-pills" style="margin-bottom:10px;">
             <div class="stat-pill"><span>${ps.length}</span> players</div>
             <div class="stat-pill">Paid <span>${paid}</span></div>
@@ -590,7 +670,8 @@
   (async () => {
     const snapshot = await getDocs(query(collection(db, "games"), orderBy("date", "desc")));
     if (!snapshot.empty) {
-      showHomeSummary(snapshot.docs[0].data());
+      const latest = snapshot.docs[0];
+      showHomeSummary(latest.data(), latest.id);
     }
   })();
 
