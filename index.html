@@ -523,18 +523,6 @@
 
   let players = [];
 
-  // ✅ Cost per player (rounded UP to 1 decimal place)
-  function getCostPerPlayer() {
-    if (players.length === 0) return 0;
-    return Math.ceil((FIELD_COST / players.length) * 10) / 10;
-  }
-
-  // ✅ Display-ready version (for UI)
-  function getCostPerPlayerDisplay() {
-    return getCostPerPlayer().toFixed(1);
-  }
-
-
   /* ── helpers ── */
   function fmtDate(iso) {
     if (!iso) return "—";
@@ -652,7 +640,7 @@
       `${summaryGame.players.length} player${summaryGame.players.length !== 1 ? "s" : ""}`;
 
     const played = summaryGame.players.filter(p => !p.didNotAttend).length;
-    const perPax = played > 0 ? Math.ceil(FIELD_COST / played) : 0;
+    const perPax = played > 0 ? Math.ceil((FIELD_COST / played) * 10) / 10: 0;
     document.getElementById("summaryCost").textContent          = played > 0 ? `$${perPax}` : "—";
     document.getElementById("summaryCostBreakdown").textContent = played > 0 ? `($${FIELD_COST} ÷ ${played} players)` : "";
 
