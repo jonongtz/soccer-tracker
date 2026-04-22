@@ -41,7 +41,7 @@
       box-shadow: 0 0 10px #00f7ff;
     }
 
-    /* CARDS */
+    /* CARD */
     .card {
       background: #111827;
       padding: 16px;
@@ -61,24 +61,41 @@
       font-size: 16px;
     }
 
+    /* ================================
+       FIX: SINGLE SHARED GRID SYSTEM
+       ================================ */
+
+    .grid-header,
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 60px 60px;
+      align-items: center;
+      column-gap: 10px;
+    }
+
+    /* HEADER */
+    .grid-header {
+      font-size: 12px;
+      color: #9ca3af;
+      margin: 10px 0 6px;
+      text-align: center;
+    }
+
     /* PLAYER ROW */
     .row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       padding: 6px 8px;
       margin-bottom: 4px;
       border-radius: 8px;
       background: rgba(255,255,255,0.03);
-      gap: 8px;
     }
 
-    .left {
+    .name {
       display: flex;
       gap: 8px;
       align-items: center;
-      flex: 1;
-      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     .number {
@@ -118,14 +135,6 @@
       cursor: pointer;
     }
 
-    /* CHECKBOX AREA */
-    .checkbox-inline {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-shrink: 0;
-    }
-
     /* SUMMARY */
     .summary-box {
       margin-top: 12px;
@@ -139,26 +148,7 @@
       color: #00f7ff;
       font-weight: bold;
       margin-bottom: 8px;
-    }
-
-    .status-header {
-      display: flex;
-      justify-content: flex-end;
-      gap: 38px;
-      font-size: 12px;
-      color: #9ca3af;
-      margin-bottom: 6px;
-      padding-right: 10px;
-    }
-
-    .delete-btn {
-      background: #ff2d2d;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
+      text-align: center;
     }
 
     .stats {
@@ -169,20 +159,12 @@
       font-size: 13px;
       display: flex;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 6px;
     }
 
-    /* MOBILE FIX */
-    @media (max-width: 480px) {
-      .row {
-        flex-wrap: wrap;
-      }
-
-      .checkbox-inline {
-        width: 100%;
-        justify-content: flex-end;
-      }
+    /* CHECKBOX CENTERING */
+    input[type="checkbox"] {
+      transform: scale(1.1);
+      cursor: pointer;
     }
   </style>
 </head>
@@ -222,10 +204,9 @@
 
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC91k_f2uhFlf-Jg4jfyAgos_AD38jvwGw",
@@ -241,11 +222,10 @@
 
   let players = [];
 
-  /* ---------------- TABS FIX ---------------- */
+  /* ---------------- TABS ---------------- */
   homeTab.onclick = () => {
     home.style.display = "block";
     log.style.display = "none";
-
     homeTab.classList.add("active");
     logTab.classList.remove("active");
   };
@@ -253,10 +233,8 @@
   logTab.onclick = () => {
     home.style.display = "none";
     log.style.display = "block";
-
     logTab.classList.add("active");
     homeTab.classList.remove("active");
-
     loadLogs();
   };
 
@@ -274,19 +252,26 @@
     const list = document.getElementById("playerList");
     list.innerHTML = "";
 
+    // HEADER (aligned to grid)
+    list.innerHTML += `
+      <div class="grid-header">
+        <div></div>
+        <div>DNP</div>
+        <div>Paid</div>
+      </div>
+    `;
+
     players.forEach((p, i) => {
       list.innerHTML += `
         <div class="row">
-          <div class="left">
+          <div class="name">
             <span class="number">${i + 1}.</span>
             <span>${p.name}</span>
           </div>
 
-          <div class="checkbox-inline">
-            <input type="checkbox" ${p.didNotAttend ? "checked" : ""}>
-            <input type="checkbox" ${p.paid ? "checked" : ""} onchange="togglePaid(${i})">
-            <button class="small-btn" onclick="deletePlayer(${i})">X</button>
-          </div>
+          <input type="checkbox" ${p.didNotAttend ? "checked" : ""}>
+
+          <input type="checkbox" ${p.paid ? "checked" : ""} onchange="togglePaid(${i})">
         </div>
       `;
     });
@@ -297,65 +282,12 @@
     renderPlayers();
   };
 
-  window.deletePlayer = function (i) {
-    players.splice(i, 1);
-    renderPlayers();
-  };
-
-  /* ---------------- SAVE + SUMMARY ---------------- */
-  function calcStats(players) {
-    const total = players.length;
-    const dnp = players.filter(p => p.didNotAttend).length;
-    const attended = Math.max(total - dnp, 1);
-    const perPax = (360 / attended).toFixed(2);
-    return { total, attended, perPax };
-  }
-
-  function showSummary(date, players) {
-    const summary = document.getElementById("summary");
-    summary.style.display = "block";
-
-    const stats = calcStats(players);
-
-    let html = `
-      <div class="summary-title">${new Date(date).toDateString()}</div>
-
-      <div class="status-header">
-        <span>DNP</span>
-        <span>Paid</span>
-      </div>
-    `;
-
-    players.forEach(p => {
-      html += `
-        <div class="row">
-          <span>${p.name}</span>
-          <div class="checkbox-inline">
-            <input type="checkbox" ${p.didNotAttend ? "checked" : ""}>
-            <input type="checkbox" ${p.paid ? "checked" : ""}>
-          </div>
-        </div>
-      `;
-    });
-
-    html += `
-      <div class="stats">
-        <div>👥 ${stats.total}</div>
-        <div>✅ ${stats.attended}</div>
-        <div>💰 $${stats.perPax}</div>
-      </div>
-    `;
-
-    summary.innerHTML = html;
-  }
-
+  /* ---------------- SAVE ---------------- */
   window.saveGame = async function () {
     const date = document.getElementById("date").value;
     if (!date || players.length === 0) return alert("Enter date and players");
 
     await addDoc(collection(db, "games"), { date, players });
-
-    showSummary(date, players);
 
     players = [];
     renderPlayers();
@@ -364,7 +296,7 @@
     loadLogs();
   };
 
-  /* ---------------- LOGS ---------------- */
+  /* ---------------- LOG ---------------- */
   async function loadLogs() {
     const snapshot = await getDocs(collection(db, "games"));
     const logDiv = document.getElementById("log");
@@ -373,39 +305,32 @@
     snapshot.forEach(docSnap => {
       const game = docSnap.data();
 
-      const stats = calcStats(game.players);
-
       let html = `
         <div class="card">
           <h4>${new Date(game.date).toDateString()}</h4>
 
-          <div class="status-header">
-            <span>DNP</span>
-            <span>Paid</span>
+          <div class="grid-header">
+            <div></div>
+            <div>DNP</div>
+            <div>Paid</div>
           </div>
       `;
 
       game.players.forEach((p, i) => {
         html += `
           <div class="row">
-            <span>${i + 1}. ${p.name}</span>
-            <div class="checkbox-inline">
-              <input type="checkbox" ${p.didNotAttend ? "checked" : ""}>
-              <input type="checkbox" ${p.paid ? "checked" : ""}>
+            <div class="name">
+              <span class="number">${i + 1}.</span>
+              <span>${p.name}</span>
             </div>
+
+            <input type="checkbox" ${p.didNotAttend ? "checked" : ""}>
+            <input type="checkbox" ${p.paid ? "checked" : ""}>
           </div>
         `;
       });
 
-      html += `
-        <div class="stats">
-          <div>👥 ${stats.total}</div>
-          <div>✅ ${stats.attended}</div>
-          <div>💰 $${stats.perPax}</div>
-        </div>
-        </div>
-      `;
-
+      html += `</div>`;
       logDiv.innerHTML += html;
     });
   }
