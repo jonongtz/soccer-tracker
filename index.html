@@ -313,6 +313,84 @@
     }
     .stat-pill span { color: var(--accent); font-weight: 600; }
 
+    /* ── Summary editable player grid (4 cols: name, DNP, Paid, del) ── */
+    .summary-grid-header,
+    .summary-player-row {
+      display: grid;
+      grid-template-columns: 1fr 52px 52px 32px;
+      align-items: center;
+      column-gap: 8px;
+    }
+    .summary-grid-header {
+      font-size: 11px;
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 8px 8px 4px;
+      text-align: center;
+    }
+    .summary-grid-header .col-name { text-align: left; }
+    .summary-player-row {
+      padding: 4px 8px;
+      margin-bottom: 3px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.03);
+      transition: background .15s;
+      min-height: 38px;
+    }
+    .summary-player-row:hover { background: rgba(255,255,255,.055); }
+
+    .edit-name-input {
+      background: var(--bg);
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 3px 7px;
+      width: 100%;
+      outline: none;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      font-size: 15px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s;
+      width: 28px;
+      height: 28px;
+      margin: 0 auto;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,.1); }
+    .icon-btn.del  { color: var(--danger); }
+    .icon-btn.edit { color: var(--muted); }
+    .icon-btn.confirm { color: var(--accent2); }
+
+    /* add-player row inside summary */
+    .summary-add-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .summary-add-row input {
+      margin-bottom: 0;
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+    .summary-add-row .add-btn {
+      padding: 8px 14px;
+      font-size: 18px;
+    }
+
     /* ── Per-pax cost ── */
     .cost-line {
       display: flex;
@@ -396,6 +474,10 @@
       </div>
       <div class="stat-pills" id="summaryStats" style="margin-top:8px;"></div>
       <div id="summaryPlayerList" style="margin-top:12px;"></div>
+      <div class="summary-add-row">
+        <input type="text" id="summaryNewPlayer" placeholder="Add player to this game…">
+        <button class="add-btn" onclick="summaryAddPlayer()">+</button>
+      </div>
     </div>
 
     <!-- Entry form -->
@@ -523,24 +605,48 @@
     document.getElementById("date").value = "";
   };
 
-  /* ── Home summary (shows last saved game) ── */
+  /* ── Firestore helpers ── */
+  let { updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+
+  async function savePlayersToDoc(docId, updatedPlayers) {
+    await updateDoc(doc(db, "games", docId), { players: updatedPlayers });
+  }
+
+  async function getDocPlayers(docId) {
+    const snap = await getDocs(query(collection(db, "games"), orderBy("date", "desc")));
+    const target = snap.docs.find(d => d.id === docId);
+    return target ? [...target.data().players] : [];
+  }
+
+  /* ── Home summary state ── */
+  let summaryDocId   = null;
+  let summaryGame    = null; // { date, players[] }
+  let editingIndex   = null; // which row is in edit mode
+
+  /* ── Show / refresh home summary ── */
   function showHomeSummary(game, docId) {
+    summaryDocId = docId;
+    summaryGame  = { date: game.date, players: game.players.map(p => ({ ...p })) };
+    editingIndex = null;
+    renderSummary();
+  }
+
+  function renderSummary() {
+    if (!summaryGame) return;
+
     document.getElementById("homeSummary").style.display = "block";
-    document.getElementById("summaryDate").textContent   = fmtDate(game.date);
+    document.getElementById("summaryDate").textContent   = fmtDate(summaryGame.date);
     document.getElementById("summaryCount").textContent  =
-      `${game.players.length} player${game.players.length !== 1 ? "s" : ""}`;
+      `${summaryGame.players.length} player${summaryGame.players.length !== 1 ? "s" : ""}`;
 
-    const played = game.players.filter(p => !p.didNotAttend).length;
+    const played = summaryGame.players.filter(p => !p.didNotAttend).length;
     const perPax = played > 0 ? Math.ceil(FIELD_COST / played) : 0;
+    document.getElementById("summaryCost").textContent          = played > 0 ? `$${perPax}` : "—";
+    document.getElementById("summaryCostBreakdown").textContent = played > 0 ? `($${FIELD_COST} ÷ ${played} players)` : "";
 
-    document.getElementById("summaryCost").textContent = played > 0 ? `$${perPax}` : "—";
-    document.getElementById("summaryCostBreakdown").textContent =
-      played > 0 ? `($${FIELD_COST} ÷ ${played} players)` : "";
-
-    const paid   = game.players.filter(p =>  p.paid).length;
-    const unpaid = game.players.filter(p => !p.paid && !p.didNotAttend).length;
-    const dnp    = game.players.filter(p =>  p.didNotAttend).length;
-
+    const paid   = summaryGame.players.filter(p =>  p.paid).length;
+    const unpaid = summaryGame.players.filter(p => !p.paid && !p.didNotAttend).length;
+    const dnp    = summaryGame.players.filter(p =>  p.didNotAttend).length;
     document.getElementById("summaryStats").innerHTML = `
       <div class="stat-pill">Paid <span>${paid}</span></div>
       <div class="stat-pill">Unpaid <span>${unpaid}</span></div>
@@ -548,51 +654,99 @@
     `;
 
     const listEl = document.getElementById("summaryPlayerList");
-    listEl.innerHTML = `
-      <div class="grid-header">
+    let html = `
+      <div class="summary-grid-header">
         <div class="col-name">Player</div>
         <div>DNP</div>
         <div>Paid</div>
+        <div></div>
       </div>
     `;
-    game.players.forEach((p, i) => {
-      listEl.innerHTML += `
-        <div class="player-row">
-          <div class="player-name-cell">
-            <span class="player-num">${i + 1}.</span>
-            <span>${p.name}</span>
-          </div>
+
+    summaryGame.players.forEach((p, i) => {
+      const isEditing = editingIndex === i;
+      const nameCell = isEditing
+        ? `<input class="edit-name-input" id="editNameInput" value="${p.name}"
+                  onkeydown="if(event.key==='Enter')confirmEdit(${i})">`
+        : `<div class="player-name-cell">
+             <span class="player-num">${i + 1}.</span>
+             <span>${p.name}</span>
+           </div>`;
+
+      const actionBtn = isEditing
+        ? `<button class="icon-btn confirm" title="Confirm" onclick="confirmEdit(${i})">✓</button>`
+        : `<button class="icon-btn del"  title="Delete"  onclick="summaryDeletePlayer(${i})">✕</button>`;
+
+      html += `
+        <div class="summary-player-row" ondblclick="startEdit(${i})">
+          ${nameCell}
           <input type="checkbox" ${p.didNotAttend ? "checked" : ""}
-                 onchange="updateSummaryPlayer('${docId}', ${i}, 'didNotAttend', this.checked)">
+                 onchange="summaryToggle(${i},'didNotAttend',this.checked)">
           <input type="checkbox" ${p.paid ? "checked" : ""}
-                 onchange="updateSummaryPlayer('${docId}', ${i}, 'paid', this.checked)">
+                 onchange="summaryToggle(${i},'paid',this.checked)">
+          ${actionBtn}
         </div>
       `;
     });
+
+    listEl.innerHTML = html;
+    if (editingIndex !== null) {
+      const inp = document.getElementById("editNameInput");
+      if (inp) { inp.focus(); inp.select(); }
+    }
   }
 
-  /* ── Update a player field in Firestore ── */
-  async function updatePlayerField(docId, playerIndex, field, value) {
-    const ref = doc(db, "games", docId);
-    const snap = await getDocs(query(collection(db, "games"), orderBy("date", "desc")));
-    const target = snap.docs.find(d => d.id === docId);
-    if (!target) return;
-    const updated = [...target.data().players];
-    updated[playerIndex] = { ...updated[playerIndex], [field]: value };
-    const { updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    await updateDoc(ref, { players: updated });
-  }
-
-  window.updateSummaryPlayer = async function (docId, i, field, value) {
-    await updatePlayerField(docId, i, field, value);
-    // refresh summary stats without full re-render
-    const snap = await getDocs(query(collection(db, "games"), orderBy("date", "desc")));
-    const target = snap.docs.find(d => d.id === docId);
-    if (target) showHomeSummary(target.data(), docId);
+  /* ── Summary: toggle checkbox ── */
+  window.summaryToggle = async function (i, field, value) {
+    summaryGame.players[i][field] = value;
+    renderSummary();
+    await savePlayersToDoc(summaryDocId, summaryGame.players);
   };
 
+  /* ── Summary: start inline edit on double-click ── */
+  window.startEdit = function (i) {
+    editingIndex = i;
+    renderSummary();
+  };
+
+  /* ── Summary: confirm name edit ── */
+  window.confirmEdit = async function (i) {
+    const inp = document.getElementById("editNameInput");
+    const newName = inp ? inp.value.trim() : "";
+    if (newName) summaryGame.players[i].name = newName;
+    editingIndex = null;
+    renderSummary();
+    await savePlayersToDoc(summaryDocId, summaryGame.players);
+  };
+
+  /* ── Summary: delete player ── */
+  window.summaryDeletePlayer = async function (i) {
+    summaryGame.players.splice(i, 1);
+    editingIndex = null;
+    renderSummary();
+    await savePlayersToDoc(summaryDocId, summaryGame.players);
+  };
+
+  /* ── Summary: add new player ── */
+  window.summaryAddPlayer = async function () {
+    const inp = document.getElementById("summaryNewPlayer");
+    const name = inp.value.trim();
+    if (!name) return;
+    summaryGame.players.push({ name, paid: false, didNotAttend: false });
+    inp.value = "";
+    renderSummary();
+    await savePlayersToDoc(summaryDocId, summaryGame.players);
+  };
+
+  document.getElementById("summaryNewPlayer").addEventListener("keydown", e => {
+    if (e.key === "Enter") window.summaryAddPlayer();
+  });
+
   window.updateLogPlayer = async function (docId, i, field, value) {
-    await updatePlayerField(docId, i, field, value);
+    const players = await getDocPlayers(docId);
+    if (!players[i]) return;
+    players[i][field] = value;
+    await savePlayersToDoc(docId, players);
     loadLogs();
   };
 
