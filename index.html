@@ -547,6 +547,10 @@
 
   /* ── Add / render players ── */
   window.addPlayer = function () {
+    if (players.length >= 22) {
+    alert("Maximum 22 players allowed per game.");
+    return;
+  }
     const input = document.getElementById("playerName");
     const name  = input.value.trim();
     if (!name) return;
@@ -729,6 +733,10 @@
 
   /* ── Summary: add new player ── */
   window.summaryAddPlayer = async function () {
+    if (summaryGame.players.length >= 22) {
+    alert("Maximum 22 players allowed per game.");
+    return;
+  }
     const inp = document.getElementById("summaryNewPlayer");
     const name = inp.value.trim();
     if (!name) return;
