@@ -46,7 +46,6 @@
       border-radius: 12px;
       margin-bottom: 16px;
       border: 1px solid #1f2937;
-      box-shadow: 0 0 15px rgba(0,255,255,0.08);
     }
 
     input {
@@ -57,7 +56,7 @@
       border: 1px solid #1f2937;
       background: #0b0f14;
       color: white;
-      font-size: 16px; /* prevents mobile zoom */
+      font-size: 16px;
     }
 
     .row {
@@ -102,8 +101,6 @@
       padding: 10px;
       border: none;
       font-weight: bold;
-      box-shadow: 0 0 10px #00f7ff;
-      cursor: pointer;
     }
 
     .small-btn {
@@ -129,12 +126,33 @@
       margin-bottom: 8px;
     }
 
+    .status-header {
+      display: flex;
+      justify-content: flex-end;
+      gap: 38px;
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 6px;
+      padding-right: 10px;
+    }
+
     .checkbox-inline {
       display: flex;
-      gap: 10px;
+      gap: 18px;
       align-items: center;
-      white-space: nowrap;
+    }
+
+    .stats {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(0,255,255,0.05);
       font-size: 13px;
+      color: #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
     }
 
     .delete-btn {
@@ -153,7 +171,6 @@
 
 <div class="container">
 
-  <!-- TABS -->
   <div class="tabs">
     <button id="homeTab" class="tab-btn active">Home</button>
     <button id="logTab" class="tab-btn">Log</button>
@@ -184,7 +201,6 @@
 
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -201,25 +217,21 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  const GAME_COST = 360;
+
   let players = [];
 
-  // Tabs
   homeTab.onclick = () => {
     home.style.display = "block";
     log.style.display = "none";
-    homeTab.classList.add("active");
-    logTab.classList.remove("active");
   };
 
   logTab.onclick = () => {
     home.style.display = "none";
     log.style.display = "block";
-    logTab.classList.add("active");
-    homeTab.classList.remove("active");
     loadLogs();
   };
 
-  // Add player
   window.addPlayer = function () {
     const name = document.getElementById("playerName").value;
     if (!name) return;
@@ -242,7 +254,8 @@
           </div>
 
           <div class="checkbox-inline">
-            <label><input type="checkbox" ${p.paid ? "checked" : ""} onchange="togglePaid(${i})"> Paid</label>
+            <input type="checkbox" ${p.didNotAttend ? "checked" : ""}>
+            <input type="checkbox" ${p.paid ? "checked" : ""} onchange="togglePaid(${i})">
             <button class="small-btn" onclick="deletePlayer(${i})">X</button>
           </div>
         </div>
@@ -260,46 +273,56 @@
     renderPlayers();
   };
 
-  function formatDate(dateStr) {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      weekday: 'short'
-    });
+  function calcStats(players) {
+    const total = players.length;
+    const dnp = players.filter(p => p.didNotAttend).length;
+    const attended = Math.max(total - dnp, 1);
+    const perPax = (GAME_COST / attended).toFixed(2);
+
+    return { total, attended, perPax };
   }
 
   function showSummary(date, players) {
     const summary = document.getElementById("summary");
     summary.style.display = "block";
 
-    let html = `<div class="summary-title">${formatDate(date)}</div>`;
+    const stats = calcStats(players);
+
+    let html = `
+      <div class="summary-title">${new Date(date).toDateString()}</div>
+
+      <div class="status-header">
+        <span>DNP</span>
+        <span>Paid</span>
+      </div>
+    `;
 
     players.forEach(p => {
       html += `
         <div class="row">
           <span>${p.name}</span>
-
           <div class="checkbox-inline">
-            <label><input type="checkbox" ${p.didNotAttend ? "checked" : ""}> DNP</label>
-            <label><input type="checkbox" ${p.paid ? "checked" : ""}> Paid</label>
+            <input type="checkbox" ${p.didNotAttend ? "checked" : ""}>
+            <input type="checkbox" ${p.paid ? "checked" : ""}>
           </div>
         </div>
       `;
     });
 
+    html += `
+      <div class="stats">
+        <div>👥 Total: ${stats.total}</div>
+        <div>✅ Attended: ${stats.attended}</div>
+        <div>💰 Per Pax: $${stats.perPax}</div>
+      </div>
+    `;
+
     summary.innerHTML = html;
   }
 
-  // SAVE GAME
   window.saveGame = async function () {
     const date = document.getElementById("date").value;
-
-    if (!date || players.length === 0) {
-      alert("Enter date and players");
-      return;
-    }
+    if (!date || players.length === 0) return alert("Enter date and players");
 
     await addDoc(collection(db, "games"), { date, players });
 
@@ -312,7 +335,6 @@
     loadLogs();
   };
 
-  // LOAD LOGS
   async function loadLogs() {
     const snapshot = await getDocs(collection(db, "games"));
     const logDiv = document.getElementById("log");
@@ -322,47 +344,48 @@
       const game = docSnap.data();
       const id = docSnap.id;
 
-      let html = `<div class="card"><h4>${formatDate(game.date)}</h4>`;
+      const stats = calcStats(game.players);
+
+      let html = `
+        <div class="card">
+          <h4>${new Date(game.date).toDateString()}</h4>
+
+          <div class="status-header">
+            <span>DNP</span>
+            <span>Paid</span>
+          </div>
+      `;
 
       game.players.forEach((p, i) => {
         html += `
           <div class="row">
             <span>${i + 1}. ${p.name}</span>
-
             <div class="checkbox-inline">
-              <label><input type="checkbox" ${p.didNotAttend ? "checked" : ""} onchange="toggleLog('${id}', ${i}, 'didNotAttend', this.checked)"> DNP</label>
-              <label><input type="checkbox" ${p.paid ? "checked" : ""} onchange="toggleLog('${id}', ${i}, 'paid', this.checked)"> Paid</label>
+              <input type="checkbox" ${p.didNotAttend ? "checked" : ""}>
+              <input type="checkbox" ${p.paid ? "checked" : ""}>
             </div>
           </div>
         `;
       });
 
-      html += `<button class="delete-btn" onclick="deleteGame('${id}')">Delete Game</button></div>`;
+      html += `
+        <div class="stats">
+          <div>👥 ${stats.total}</div>
+          <div>✅ ${stats.attended}</div>
+          <div>💰 $${stats.perPax}</div>
+        </div>
+
+        <button class="delete-btn" onclick="deleteGame('${id}')">Delete Game</button>
+        </div>
+      `;
 
       logDiv.innerHTML += html;
     });
   }
 
-  window.toggleLog = async function (gameId, index, field, value) {
-    const snapshot = await getDocs(collection(db, "games"));
-
-    let gameData;
-    snapshot.forEach(docSnap => {
-      if (docSnap.id === gameId) gameData = docSnap.data();
-    });
-
-    gameData.players[index][field] = value;
-
-    await updateDoc(doc(db, "games", gameId), {
-      players: gameData.players
-    });
-
-    loadLogs();
-  };
-
-  window.deleteGame = async function (gameId) {
-    if (!confirm("Delete this game? This cannot be undone.")) return;
-    await deleteDoc(doc(db, "games", gameId));
+  window.deleteGame = async function (id) {
+    if (!confirm("Delete this game?")) return;
+    await deleteDoc(doc(db, "games", id));
     loadLogs();
   };
 
