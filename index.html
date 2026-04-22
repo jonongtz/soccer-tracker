@@ -29,7 +29,6 @@
       min-height: 100vh;
     }
 
-    /* pitch grid background */
     body::before {
       content: '';
       position: fixed;
@@ -71,7 +70,7 @@
     /* ── Tabs ── */
     .tabs {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 20px;
       background: var(--surface);
       border: 1px solid var(--border);
@@ -84,12 +83,12 @@
       color: var(--muted);
       border: none;
       border-radius: 9px;
-      padding: 10px;
+      padding: 10px 4px;
       cursor: pointer;
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 700;
-      letter-spacing: .06em;
+      letter-spacing: .04em;
       text-transform: uppercase;
       transition: background .2s, color .2s, box-shadow .2s;
     }
@@ -106,6 +105,7 @@
       border-radius: var(--radius);
       padding: 18px;
       margin-bottom: 16px;
+      animation: fadeUp .25s ease both;
     }
     .card-title {
       font-family: 'Barlow Condensed', sans-serif;
@@ -120,331 +120,291 @@
       gap: 8px;
     }
 
+    /* ── Weather ── */
+    .weather-card {
+      background: linear-gradient(135deg, #0a1628 0%, #0f1e35 100%);
+      border: 1px solid #1d3a5c;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      animation: fadeUp .25s ease both;
+    }
+    .weather-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .weather-location {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .weather-location span { color: var(--accent); }
+    .weather-updated { font-size: 11px; color: var(--muted); }
+    .weather-scroll {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .weather-scroll::-webkit-scrollbar { display: none; }
+    .weather-hour {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 8px;
+      min-width: 52px;
+    }
+    .weather-hour.now {
+      background: rgba(0,229,255,.1);
+      border-color: var(--accent);
+    }
+    .weather-hour-time {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .02em;
+    }
+    .weather-hour.now .weather-hour-time { color: var(--accent); }
+    .weather-hour-icon  { font-size: 18px; line-height: 1; }
+    .weather-hour-temp  { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; color: var(--text); }
+    .weather-hour-rain  { font-size: 10px; color: #5b9bd5; font-family: 'Barlow Condensed', sans-serif; }
+    .weather-loading    { font-size: 12px; color: var(--muted); text-align: center; padding: 10px 0;
+                          font-family: 'Barlow Condensed', sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+
+    /* ── PIN overlay ── */
+    .pin-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(8,12,16,.92);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .pin-overlay.show { display: flex; }
+    .pin-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      width: 300px;
+      text-align: center;
+      animation: fadeUp .2s ease both;
+    }
+    .pin-box h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px; font-weight: 800; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
+    }
+    .pin-box p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    .pin-input {
+      width: 100%; padding: 12px 14px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--bg); color: var(--text);
+      font-family: 'Barlow Condensed', sans-serif; font-size: 20px;
+      letter-spacing: .2em; text-align: center; outline: none;
+      text-transform: uppercase; margin-bottom: 12px; transition: border-color .2s;
+    }
+    .pin-input:focus { border-color: var(--accent); }
+    .pin-input.error { border-color: var(--danger); animation: shake .3s ease; }
+    .pin-submit {
+      width: 100%; background: var(--accent); color: #000; border: none;
+      border-radius: 8px; padding: 12px;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 15px;
+      font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      cursor: pointer; transition: opacity .2s;
+    }
+    .pin-submit:hover { opacity: .85; }
+    .pin-cancel {
+      margin-top: 10px; width: 100%; background: transparent;
+      color: var(--muted); border: none;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 13px;
+      cursor: pointer; padding: 6px; text-transform: uppercase; letter-spacing: .06em;
+    }
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25%      { transform: translateX(-6px); }
+      75%      { transform: translateX(6px); }
+    }
+
     /* ── Inputs ── */
     input[type="date"],
     input[type="text"] {
-      width: 100%;
-      padding: 10px 14px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      outline: none;
-      transition: border-color .2s;
+      width: 100%; padding: 10px 14px; margin-bottom: 10px;
+      border-radius: 8px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 15px;
+      outline: none; transition: border-color .2s;
     }
-    input[type="date"]:focus,
-    input[type="text"]:focus {
-      border-color: var(--accent);
-    }
+    input[type="date"]:focus, input[type="text"]:focus { border-color: var(--accent); }
     input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1) opacity(.5); }
 
-    .add-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
+    .add-row { display: flex; gap: 8px; margin-bottom: 4px; }
     .add-row input { margin-bottom: 0; }
-
     .add-btn {
-      background: var(--accent);
-      color: #000;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 20px;
-      font-weight: bold;
-      flex-shrink: 0;
-      line-height: 1;
-      transition: opacity .2s;
+      background: var(--accent); color: #000; border: none;
+      padding: 10px 16px; border-radius: 8px; cursor: pointer;
+      font-size: 20px; font-weight: bold; flex-shrink: 0; line-height: 1; transition: opacity .2s;
     }
     .add-btn:hover { opacity: .8; }
 
-    /* ── Player grid ── */
-    .grid-header,
-    .player-row {
+    /* ── Player grids ── */
+    .grid-header, .player-row {
       display: grid;
       grid-template-columns: 1fr 52px 52px;
       align-items: center;
       column-gap: 8px;
     }
     .grid-header {
-      font-size: 11px;
-      font-family: 'Barlow Condensed', sans-serif;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 8px 8px 4px;
-      text-align: center;
+      font-size: 11px; font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+      padding: 8px 8px 4px; text-align: center;
     }
     .grid-header .col-name { text-align: left; }
-
     .player-row {
-      padding: 7px 8px;
-      margin-bottom: 3px;
-      border-radius: 8px;
-      background: rgba(255,255,255,.03);
-      transition: background .15s;
+      padding: 7px 8px; margin-bottom: 3px; border-radius: 8px;
+      background: rgba(255,255,255,.03); transition: background .15s;
     }
     .player-row:hover { background: rgba(255,255,255,.055); }
 
-    .player-name-cell {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .player-num {
-      color: var(--accent);
-      font-family: 'Barlow Condensed', sans-serif;
-      font-weight: 700;
-      font-size: 13px;
-      min-width: 20px;
-    }
-
-    /* custom checkboxes */
-    input[type="checkbox"] {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 22px;
-      height: 22px;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-      background: var(--bg);
-      cursor: pointer;
-      display: block;
-      margin: 0 auto;
-      transition: background .15s, border-color .15s;
-      position: relative;
-    }
-    input[type="checkbox"]:checked {
-      background: var(--accent2);
-      border-color: var(--accent2);
-    }
-    input[type="checkbox"]:checked::after {
-      content: '✓';
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%,-50%);
-      color: #000;
-      font-size: 13px;
-      font-weight: bold;
-    }
-
-    /* ── Buttons ── */
-    .save-btn {
-      background: var(--accent);
-      color: #000;
-      width: 100%;
-      margin-top: 12px;
-      border-radius: 10px;
-      padding: 12px;
-      border: none;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      cursor: pointer;
-      box-shadow: 0 0 18px rgba(0,229,255,.3);
-      transition: opacity .2s;
-    }
-    .save-btn:hover { opacity: .85; }
-
-    .delete-btn {
-      background: transparent;
-      color: var(--danger);
-      border: 1px solid var(--danger);
-      padding: 7px 12px;
-      border-radius: 7px;
-      cursor: pointer;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      margin-top: 12px;
-      width: 100%;
-      transition: background .2s, color .2s;
-    }
-    .delete-btn:hover { background: var(--danger); color: #fff; }
-
-    /* ── Home summary ── */
-    #homeSummary { display: none; }
-    .summary-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-    .summary-date {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 22px;
-      font-weight: 800;
-      letter-spacing: .04em;
-      color: var(--accent2);
-    }
-    .summary-badge {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 3px 10px;
-      font-size: 12px;
-      color: var(--muted);
-      font-family: 'Barlow Condensed', sans-serif;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-    .stat-pills {
-      display: flex;
-      gap: 8px;
-      margin-top: 4px;
-      flex-wrap: wrap;
-    }
-    .stat-pill {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 13px;
-      color: var(--text);
-    }
-    .stat-pill span { color: var(--accent); font-weight: 600; }
-
-    /* ── Summary editable player grid (4 cols: name, DNP, Paid, del) ── */
-    .summary-grid-header,
-    .summary-player-row {
+    .summary-grid-header, .summary-player-row {
       display: grid;
       grid-template-columns: 1fr 52px 52px 32px;
       align-items: center;
       column-gap: 8px;
     }
     .summary-grid-header {
-      font-size: 11px;
-      font-family: 'Barlow Condensed', sans-serif;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 8px 8px 4px;
-      text-align: center;
+      font-size: 11px; font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+      padding: 8px 8px 4px; text-align: center;
     }
     .summary-grid-header .col-name { text-align: left; }
     .summary-player-row {
-      padding: 4px 8px;
-      margin-bottom: 3px;
-      border-radius: 8px;
-      background: rgba(255,255,255,.03);
-      transition: background .15s;
-      min-height: 38px;
+      padding: 4px 8px; margin-bottom: 3px; border-radius: 8px;
+      background: rgba(255,255,255,.03); transition: background .15s; min-height: 38px;
     }
     .summary-player-row:hover { background: rgba(255,255,255,.055); }
 
-    .edit-name-input {
-      background: var(--bg);
-      border: 1px solid var(--accent);
-      border-radius: 6px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      padding: 3px 7px;
-      width: 100%;
-      outline: none;
+    .player-name-cell { display: flex; align-items: center; gap: 8px; }
+    .player-num {
+      color: var(--accent); font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700; font-size: 13px; min-width: 20px;
     }
+
+    /* custom checkboxes */
+    input[type="checkbox"] {
+      appearance: none; -webkit-appearance: none;
+      width: 22px; height: 22px;
+      border: 1.5px solid var(--border); border-radius: 6px;
+      background: var(--bg); cursor: pointer; display: block;
+      margin: 0 auto; transition: background .15s, border-color .15s; position: relative;
+    }
+    input[type="checkbox"]:checked { background: var(--accent2); border-color: var(--accent2); }
+    input[type="checkbox"]:checked::after {
+      content: '✓'; position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%); color: #000; font-size: 13px; font-weight: bold;
+    }
+
+    /* ── Buttons ── */
+    .save-btn {
+      background: var(--accent); color: #000; width: 100%; margin-top: 12px;
+      border-radius: 10px; padding: 12px; border: none;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 16px;
+      font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+      cursor: pointer; box-shadow: 0 0 18px rgba(0,229,255,.3); transition: opacity .2s;
+    }
+    .save-btn:hover { opacity: .85; }
+
+    .delete-btn {
+      background: transparent; color: var(--danger); border: 1px solid var(--danger);
+      padding: 7px 12px; border-radius: 7px; cursor: pointer;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 13px;
+      font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      margin-top: 12px; width: 100%; transition: background .2s, color .2s;
+    }
+    .delete-btn:hover { background: var(--danger); color: #fff; }
 
     .icon-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 6px;
-      font-size: 15px;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background .15s;
-      width: 28px;
-      height: 28px;
-      margin: 0 auto;
+      background: none; border: none; cursor: pointer; padding: 4px;
+      border-radius: 6px; font-size: 15px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s; width: 28px; height: 28px; margin: 0 auto;
     }
     .icon-btn:hover { background: rgba(255,255,255,.1); }
-    .icon-btn.del  { color: var(--danger); }
-    .icon-btn.edit { color: var(--muted); }
-    .icon-btn.confirm { color: var(--accent2); }
+    .icon-btn.del { color: var(--danger); }
 
-    /* add-player row inside summary */
-    .summary-add-row {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
+    /* ── Home summary ── */
+    #homeSummary { display: none; }
+    .summary-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .summary-date {
+      font-family: 'Barlow Condensed', sans-serif; font-size: 22px;
+      font-weight: 800; letter-spacing: .04em; color: var(--accent2);
     }
-    .summary-add-row input {
-      margin-bottom: 0;
-      flex: 1;
-      padding: 8px 12px;
-      font-size: 14px;
+    .summary-badge {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 3px 10px; font-size: 12px; color: var(--muted);
+      font-family: 'Barlow Condensed', sans-serif; letter-spacing: .06em; text-transform: uppercase;
     }
-    .summary-add-row .add-btn {
-      padding: 8px 14px;
-      font-size: 18px;
+    .stat-pills { display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+    .stat-pill {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 4px 12px; font-size: 13px; color: var(--text);
     }
+    .stat-pill span { color: var(--accent); font-weight: 600; }
 
-    /* ── Per-pax cost ── */
-    .cost-line {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-      margin-top: 6px;
-    }
-    .cost-label {
-      font-size: 12px;
-      color: var(--muted);
-      font-family: 'Barlow Condensed', sans-serif;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-    }
-    .cost-amount {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--accent2);
-      text-shadow: 0 0 12px rgba(57,255,143,.35);
-    }
-    .cost-breakdown {
-      font-size: 11px;
-      color: var(--muted);
-    }
+    .cost-line { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; }
+    .cost-label { font-size: 12px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+    .cost-amount { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 800; color: var(--accent2); text-shadow: 0 0 12px rgba(57,255,143,.35); }
+    .cost-breakdown { font-size: 11px; color: var(--muted); }
 
-    /* ── Log cards ── */
+    .summary-add-row { display: flex; gap: 8px; margin-top: 10px; }
+    .summary-add-row input { margin-bottom: 0; flex: 1; padding: 8px 12px; font-size: 14px; }
+    .summary-add-row .add-btn { padding: 8px 14px; font-size: 18px; }
+
+    /* ── Log ── */
     .log-game-date {
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--accent2);
-      margin-bottom: 10px;
-      letter-spacing: .04em;
+      font-family: 'Barlow Condensed', sans-serif; font-size: 18px;
+      font-weight: 800; color: var(--accent2); margin-bottom: 10px; letter-spacing: .04em;
     }
     .log-empty {
-      text-align: center;
-      color: var(--muted);
-      padding: 40px 0;
-      font-family: 'Barlow Condensed', sans-serif;
-      letter-spacing: .06em;
-      text-transform: uppercase;
+      text-align: center; color: var(--muted); padding: 40px 0;
+      font-family: 'Barlow Condensed', sans-serif; letter-spacing: .06em; text-transform: uppercase;
     }
 
-    /* fade-in animation */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(12px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .card { animation: fadeUp .25s ease both; }
   </style>
 </head>
 
 <body>
+
+<!-- ── PIN overlay ── -->
+<div class="pin-overlay" id="pinOverlay">
+  <div class="pin-box">
+    <h2>🔐 Access Required</h2>
+    <p>Enter passcode to continue</p>
+    <input class="pin-input" id="pinInput" type="password" maxlength="10"
+           placeholder="••••" autocomplete="off"
+           onkeydown="if(event.key==='Enter')submitPin()">
+    <button class="pin-submit" onclick="submitPin()">Unlock</button>
+    <button class="pin-cancel" onclick="cancelPin()">Cancel</button>
+  </div>
+</div>
+
 <div class="container">
 
   <div class="app-header">
@@ -453,14 +413,26 @@
   </div>
 
   <div class="tabs">
-    <button id="homeTab" class="tab-btn active">Home</button>
-    <button id="logTab"  class="tab-btn">Log</button>
+    <button id="homeTab"    class="tab-btn active">Home</button>
+    <button id="newGameTab" class="tab-btn">New Game</button>
+    <button id="logTab"     class="tab-btn">Log</button>
   </div>
 
   <!-- ══ HOME ══ -->
   <div id="home">
 
-    <!-- Latest saved game summary -->
+    <!-- Weather -->
+    <div class="weather-card">
+      <div class="weather-header">
+        <div class="weather-location">📍 <span>Orto · West Coast Hwy</span></div>
+        <div class="weather-updated" id="weatherUpdated"></div>
+      </div>
+      <div id="weatherContent">
+        <div class="weather-loading">Loading forecast…</div>
+      </div>
+    </div>
+
+    <!-- Last saved game summary -->
     <div id="homeSummary" class="card">
       <div class="card-title">📋 Game ON!</div>
       <div class="summary-meta">
@@ -480,21 +452,20 @@
       </div>
     </div>
 
-    <!-- Entry form -->
+  </div>
+
+  <!-- ══ NEW GAME ══ -->
+  <div id="newGame" style="display:none;">
     <div class="card">
       <div class="card-title">📅 New Game</div>
       <input type="date" id="date">
-
       <div class="add-row">
         <input type="text" id="playerName" placeholder="Player name">
         <button class="add-btn" onclick="addPlayer()">+</button>
       </div>
-
       <div id="playerList"></div>
-
       <button class="save-btn" onclick="saveGame()">💾 Save Game</button>
     </div>
-
   </div>
 
   <!-- ══ LOG ══ -->
@@ -503,8 +474,9 @@
 </div>
 
 <script type="module">
-  import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy }
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc,
+           doc, query, orderBy, updateDoc }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -519,61 +491,141 @@
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  const FIELD_COST = 360; // total cost per game session
+  const FIELD_COST    = 360;
+  const PIN           = "TURF";
 
-  let players = [];
+  let players         = [];
+  let pinTarget       = null;
+  let newGameUnlocked = false;
+  let logUnlocked     = false;
 
-  /* ── helpers ── */
-  function fmtDate(iso) {
-    if (!iso) return "—";
-    const [y, m, d] = iso.split("-");
-    return new Date(+y, +m - 1, +d).toLocaleDateString("en-SG", {
-      weekday: "short", day: "numeric", month: "short", year: "numeric"
-    });
+  /* ════════════════════════════════════
+     WEATHER  — Open-Meteo (no API key)
+     Orto / West Coast Hwy, Singapore
+     lat 1.3147  lon 103.7635
+  ════════════════════════════════════ */
+  async function loadWeather() {
+    const LAT = 1.3147, LON = 103.7635;
+    const url = `https://api.open-meteo.com/v1/forecast`
+      + `?latitude=${LAT}&longitude=${LON}`
+      + `&hourly=temperature_2m,precipitation_probability,weathercode`
+      + `&timezone=Asia%2FSingapore&forecast_days=1`;
+    try {
+      const res  = await fetch(url);
+      const data = await res.json();
+      renderWeather(data);
+    } catch {
+      document.getElementById("weatherContent").innerHTML =
+        `<div class="weather-loading">Forecast unavailable</div>`;
+    }
   }
 
-  /* ── Tabs ── */
-  document.getElementById("homeTab").onclick = () => switchTab("home");
-  
-  /* =========================
-     🔐 PIN LOCK (ADDED)
-  ========================== */
-/(old code) document.getElementById("logTab").onclick  = () => switchTab("log");/
+  function wmoIcon(code) {
+    if (code === 0)  return "☀️";
+    if (code <= 2)   return "⛅";
+    if (code <= 3)   return "☁️";
+    if (code <= 48)  return "🌫️";
+    if (code <= 67)  return "🌧️";
+    if (code <= 77)  return "🌨️";
+    if (code <= 82)  return "🌦️";
+    if (code <= 99)  return "⛈️";
+    return "🌡️";
+  }
 
- let logUnlocked = false;
+  function renderWeather(data) {
+    const now   = new Date();
+    const curHr = now.getHours();
+    const { time, temperature_2m: temps, precipitation_probability: probs, weathercode: codes } = data.hourly;
 
-  document.getElementById("logTab").onclick = () => {
-    if (!logUnlocked) {
-      const pin = prompt("Enter PIN to access Log:");
-      const correctPin = "TURF";
-
-      if (pin !== correctPin) {
-        alert("Incorrect PIN");
-        return;
-      }
-
-      logUnlocked = true;
+    let html = "";
+    for (let i = 0; i < time.length; i++) {
+      const hr    = new Date(time[i]).getHours();
+      const isNow = hr === curHr;
+      const lbl   = isNow ? "Now"
+        : hr === 0 ? "12am" : hr < 12 ? `${hr}am`
+        : hr === 12 ? "12pm" : `${hr-12}pm`;
+      html += `
+        <div class="weather-hour${isNow ? " now" : ""}">
+          <div class="weather-hour-time">${lbl}</div>
+          <div class="weather-hour-icon">${wmoIcon(codes[i])}</div>
+          <div class="weather-hour-temp">${Math.round(temps[i])}°</div>
+          <div class="weather-hour-rain">${probs[i]}%</div>
+        </div>`;
     }
 
+    document.getElementById("weatherContent").innerHTML =
+      `<div class="weather-scroll">${html}</div>`;
+    document.getElementById("weatherUpdated").textContent =
+      `Updated ${now.toLocaleTimeString("en-SG",{hour:"2-digit",minute:"2-digit"})}`;
+
+    setTimeout(() => {
+      const nowEl = document.querySelector(".weather-hour.now");
+      if (nowEl) nowEl.scrollIntoView({ inline: "center", behavior: "smooth", block: "nearest" });
+    }, 150);
+  }
+
+  loadWeather();
+
+  /* ════════════════════════════════════
+     PIN OVERLAY
+  ════════════════════════════════════ */
+  window.submitPin = function () {
+    const val = document.getElementById("pinInput").value.trim().toUpperCase();
+    if (val === PIN) {
+      if (pinTarget === "newGame") newGameUnlocked = true;
+      if (pinTarget === "log")     logUnlocked     = true;
+      closePinOverlay();
+      switchTab(pinTarget);
+    } else {
+      const inp = document.getElementById("pinInput");
+      inp.classList.add("error");
+      inp.value = "";
+      setTimeout(() => inp.classList.remove("error"), 400);
+    }
+  };
+
+  window.cancelPin = function () { closePinOverlay(); };
+
+  function closePinOverlay() {
+    document.getElementById("pinOverlay").classList.remove("show");
+    document.getElementById("pinInput").value = "";
+    pinTarget = null;
+  }
+
+  function requestPin(target) {
+    pinTarget = target;
+    document.getElementById("pinOverlay").classList.add("show");
+    setTimeout(() => document.getElementById("pinInput").focus(), 60);
+  }
+
+  /* ════════════════════════════════════
+     TABS
+  ════════════════════════════════════ */
+  document.getElementById("homeTab").onclick    = () => switchTab("home");
+  document.getElementById("newGameTab").onclick = () => {
+    if (!newGameUnlocked) { requestPin("newGame"); return; }
+    switchTab("newGame");
+  };
+  document.getElementById("logTab").onclick = () => {
+    if (!logUnlocked) { requestPin("log"); return; }
     switchTab("log");
   };
 
-
   function switchTab(tab) {
-    const isHome = tab === "home";
-    document.getElementById("home").style.display    = isHome ? "block" : "none";
-    document.getElementById("log").style.display     = isHome ? "none"  : "block";
-    document.getElementById("homeTab").classList.toggle("active",  isHome);
-    document.getElementById("logTab").classList.toggle("active",  !isHome);
-    if (!isHome) loadLogs();
+    ["home","newGame","log"].forEach(id =>
+      document.getElementById(id).style.display = id === tab ? "block" : "none"
+    );
+    document.getElementById("homeTab").classList.toggle("active",    tab === "home");
+    document.getElementById("newGameTab").classList.toggle("active", tab === "newGame");
+    document.getElementById("logTab").classList.toggle("active",     tab === "log");
+    if (tab === "log") loadLogs();
   }
 
-  /* ── Add / render players ── */
+  /* ════════════════════════════════════
+     NEW GAME — player entry
+  ════════════════════════════════════ */
   window.addPlayer = function () {
-    if (players.length >= 22) {
-    alert("Maximum 22 players allowed per game.");
-    return;
-  }
+    if (players.length >= 22) { alert("Maximum 22 players."); return; }
     const input = document.getElementById("playerName");
     const name  = input.value.trim();
     if (!name) return;
@@ -588,73 +640,66 @@
 
   function renderPlayers() {
     const list = document.getElementById("playerList");
-    if (players.length === 0) { list.innerHTML = ""; return; }
-
+    if (!players.length) { list.innerHTML = ""; return; }
     list.innerHTML = `
       <div class="grid-header">
-        <div class="col-name">Player</div>
-        <div>DNP</div>
-        <div>Paid</div>
-      </div>
-    `;
-
+        <div class="col-name">Player</div><div>DNP</div><div>Paid</div>
+      </div>`;
     players.forEach((p, i) => {
       list.innerHTML += `
         <div class="player-row">
           <div class="player-name-cell">
-            <span class="player-num">${i + 1}.</span>
+            <span class="player-num">${i+1}.</span>
             <span>${p.name}</span>
           </div>
-          <input type="checkbox" ${p.didNotAttend ? "checked" : ""}
-                 onchange="toggleDNP(${i})">
-          <input type="checkbox" ${p.paid ? "checked" : ""}
-                 onchange="togglePaid(${i})">
-        </div>
-      `;
+          <input type="checkbox" ${p.didNotAttend?"checked":""} onchange="toggleDNP(${i})">
+          <input type="checkbox" ${p.paid?"checked":""}         onchange="togglePaid(${i})">
+        </div>`;
     });
   }
 
-  window.togglePaid = i => { players[i].paid = !players[i].paid; renderPlayers(); };
+  window.togglePaid = i => { players[i].paid         = !players[i].paid;         renderPlayers(); };
   window.toggleDNP  = i => { players[i].didNotAttend = !players[i].didNotAttend; renderPlayers(); };
 
-  /* ── Save ── */
+  /* ════════════════════════════════════
+     SAVE GAME
+  ════════════════════════════════════ */
   window.saveGame = async function () {
     const date = document.getElementById("date").value;
-    if (!date)              return alert("Please select a date.");
-    if (players.length === 0) return alert("Please add at least one player.");
+    if (!date)           return alert("Please select a date.");
+    if (!players.length) return alert("Please add at least one player.");
 
     const docRef = await addDoc(collection(db, "games"), { date, players });
-
     showHomeSummary({ date, players: [...players] }, docRef.id);
 
     players = [];
     renderPlayers();
     document.getElementById("date").value = "";
+    switchTab("home");
   };
 
-  /* ── Firestore helpers ── */
-  let { updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-
+  /* ════════════════════════════════════
+     FIRESTORE HELPERS
+  ════════════════════════════════════ */
   async function savePlayersToDoc(docId, updatedPlayers) {
     await updateDoc(doc(db, "games", docId), { players: updatedPlayers });
   }
 
   async function getDocPlayers(docId) {
-    const snap = await getDocs(query(collection(db, "games"), orderBy("date", "desc")));
-    const target = snap.docs.find(d => d.id === docId);
-    return target ? [...target.data().players] : [];
+    const snap = await getDocs(query(collection(db, "games"), orderBy("date","desc")));
+    const t    = snap.docs.find(d => d.id === docId);
+    return t ? [...t.data().players] : [];
   }
 
-  /* ── Home summary state ── */
-  let summaryDocId   = null;
-  let summaryGame    = null; // { date, players[] }
-  let editingIndex   = null; // which row is in edit mode
+  /* ════════════════════════════════════
+     HOME SUMMARY
+  ════════════════════════════════════ */
+  let summaryDocId = null;
+  let summaryGame  = null;
 
-  /* ── Show / refresh home summary ── */
   function showHomeSummary(game, docId) {
     summaryDocId = docId;
     summaryGame  = { date: game.date, players: game.players.map(p => ({ ...p })) };
-    editingIndex = null;
     renderSummary();
   }
 
@@ -667,100 +712,55 @@
       `${summaryGame.players.length} player${summaryGame.players.length !== 1 ? "s" : ""}`;
 
     const played = summaryGame.players.filter(p => !p.didNotAttend).length;
-    const perPax = played > 0 ? Math.ceil((FIELD_COST / played) * 10) / 10: 0;
+    const perPax = played > 0 ? Math.ceil((FIELD_COST / played) * 10) / 10 : 0;
     document.getElementById("summaryCost").textContent          = played > 0 ? `$${perPax}` : "—";
     document.getElementById("summaryCostBreakdown").textContent = played > 0 ? `($${FIELD_COST} ÷ ${played} players)` : "";
 
     const paid   = summaryGame.players.filter(p =>  p.paid).length;
     const unpaid = summaryGame.players.filter(p => !p.paid && !p.didNotAttend).length;
     const dnp    = summaryGame.players.filter(p =>  p.didNotAttend).length;
+
     document.getElementById("summaryStats").innerHTML = `
       <div class="stat-pill">Paid <span>${paid}</span></div>
       <div class="stat-pill">Unpaid <span>${unpaid}</span></div>
-      <div class="stat-pill">DNP <span>${dnp}</span></div>
-    `;
+      <div class="stat-pill">DNP <span>${dnp}</span></div>`;
 
     const listEl = document.getElementById("summaryPlayerList");
     let html = `
       <div class="summary-grid-header">
-        <div class="col-name">Player</div>
-        <div>DNP</div>
-        <div>Paid</div>
-        <div></div>
-      </div>
-    `;
+        <div class="col-name">Player</div><div>DNP</div><div>Paid</div><div></div>
+      </div>`;
 
     summaryGame.players.forEach((p, i) => {
-      const isEditing = editingIndex === i;
-      const nameCell = isEditing
-        ? `<input class="edit-name-input" id="editNameInput" value="${p.name}"
-                  onkeydown="if(event.key==='Enter')confirmEdit(${i})">`
-        : `<div class="player-name-cell">
-             <span class="player-num">${i + 1}.</span>
-             <span>${p.name}</span>
-           </div>`;
-
-      const actionBtn = isEditing
-        ? `<button class="icon-btn confirm" title="Confirm" onclick="confirmEdit(${i})">✓</button>`
-        : `<button class="icon-btn del"  title="Delete"  onclick="summaryDeletePlayer(${i})">✕</button>`;
-
       html += `
-        <div class="summary-player-row" ondblclick="startEdit(${i})">
-          ${nameCell}
-          <input type="checkbox" ${p.didNotAttend ? "checked" : ""}
-                 onchange="summaryToggle(${i},'didNotAttend',this.checked)">
-          <input type="checkbox" ${p.paid ? "checked" : ""}
-                 onchange="summaryToggle(${i},'paid',this.checked)">
-          ${actionBtn}
-        </div>
-      `;
+        <div class="summary-player-row">
+          <div class="player-name-cell">
+            <span class="player-num">${i+1}.</span>
+            <span>${p.name}</span>
+          </div>
+          <input type="checkbox" ${p.didNotAttend?"checked":""} onchange="summaryToggle(${i},'didNotAttend',this.checked)">
+          <input type="checkbox" ${p.paid?"checked":""}         onchange="summaryToggle(${i},'paid',this.checked)">
+          <button class="icon-btn del" title="Remove player" onclick="summaryDeletePlayer(${i})">✕</button>
+        </div>`;
     });
-
     listEl.innerHTML = html;
-    if (editingIndex !== null) {
-      const inp = document.getElementById("editNameInput");
-      if (inp) { inp.focus(); inp.select(); }
-    }
   }
 
-  /* ── Summary: toggle checkbox ── */
   window.summaryToggle = async function (i, field, value) {
     summaryGame.players[i][field] = value;
     renderSummary();
     await savePlayersToDoc(summaryDocId, summaryGame.players);
   };
 
-  /* ── Summary: start inline edit on double-click ── */
-  window.startEdit = function (i) {
-    editingIndex = i;
-    renderSummary();
-  };
-
-  /* ── Summary: confirm name edit ── */
-  window.confirmEdit = async function (i) {
-    const inp = document.getElementById("editNameInput");
-    const newName = inp ? inp.value.trim() : "";
-    if (newName) summaryGame.players[i].name = newName;
-    editingIndex = null;
-    renderSummary();
-    await savePlayersToDoc(summaryDocId, summaryGame.players);
-  };
-
-  /* ── Summary: delete player ── */
   window.summaryDeletePlayer = async function (i) {
     summaryGame.players.splice(i, 1);
-    editingIndex = null;
     renderSummary();
     await savePlayersToDoc(summaryDocId, summaryGame.players);
   };
 
-  /* ── Summary: add new player ── */
   window.summaryAddPlayer = async function () {
-    if (summaryGame.players.length >= 22) {
-    alert("Maximum 22 players allowed per game.");
-    return;
-  }
-    const inp = document.getElementById("summaryNewPlayer");
+    if (summaryGame.players.length >= 22) { alert("Maximum 22 players."); return; }
+    const inp  = document.getElementById("summaryNewPlayer");
     const name = inp.value.trim();
     if (!name) return;
     summaryGame.players.push({ name, paid: false, didNotAttend: false });
@@ -773,20 +773,21 @@
     if (e.key === "Enter") window.summaryAddPlayer();
   });
 
+  /* ════════════════════════════════════
+     LOG
+  ════════════════════════════════════ */
   window.updateLogPlayer = async function (docId, i, field, value) {
-    const players = await getDocPlayers(docId);
-    if (!players[i]) return;
-    players[i][field] = value;
-    await savePlayersToDoc(docId, players);
+    const ps = await getDocPlayers(docId);
+    if (!ps[i]) return;
+    ps[i][field] = value;
+    await savePlayersToDoc(docId, ps);
     loadLogs();
   };
 
-  /* ── Log ── */
   async function loadLogs() {
-    const logDiv = document.getElementById("log");
+    const logDiv   = document.getElementById("log");
     logDiv.innerHTML = "";
-
-    const snapshot = await getDocs(query(collection(db, "games"), orderBy("date", "desc")));
+    const snapshot = await getDocs(query(collection(db, "games"), orderBy("date","desc")));
 
     if (snapshot.empty) {
       logDiv.innerHTML = `<div class="log-empty">No games logged yet</div>`;
@@ -795,33 +796,28 @@
 
     snapshot.forEach(docSnap => {
       const { date, players: ps } = docSnap.data();
-      const id = docSnap.id;
-
+      const id     = docSnap.id;
       const played = ps.filter(p => !p.didNotAttend).length;
       const perPax = played > 0 ? Math.ceil(FIELD_COST / played) : 0;
       const paid   = ps.filter(p =>  p.paid).length;
       const dnp    = ps.filter(p =>  p.didNotAttend).length;
 
-      const costHtml = played > 0
-        ? `<div class="cost-line" style="margin-bottom:10px;">
-             <span class="cost-label">Per pax</span>
-             <span class="cost-amount">$${perPax}</span>
-             <span class="cost-breakdown">($${FIELD_COST} ÷ ${played} players)</span>
-           </div>`
-        : "";
+      const costHtml = played > 0 ? `
+        <div class="cost-line" style="margin-bottom:10px;">
+          <span class="cost-label">Per pax</span>
+          <span class="cost-amount">$${perPax}</span>
+          <span class="cost-breakdown">($${FIELD_COST} ÷ ${played} players)</span>
+        </div>` : "";
 
-      let rows = ps.map((p, i) => `
+      const rows = ps.map((p, i) => `
         <div class="player-row">
           <div class="player-name-cell">
-            <span class="player-num">${i + 1}.</span>
+            <span class="player-num">${i+1}.</span>
             <span>${p.name}</span>
           </div>
-          <input type="checkbox" ${p.didNotAttend ? "checked" : ""}
-                 onchange="updateLogPlayer('${id}', ${i}, 'didNotAttend', this.checked)">
-          <input type="checkbox" ${p.paid ? "checked" : ""}
-                 onchange="updateLogPlayer('${id}', ${i}, 'paid', this.checked)">
-        </div>
-      `).join("");
+          <input type="checkbox" ${p.didNotAttend?"checked":""} onchange="updateLogPlayer('${id}',${i},'didNotAttend',this.checked)">
+          <input type="checkbox" ${p.paid?"checked":""}         onchange="updateLogPlayer('${id}',${i},'paid',this.checked)">
+        </div>`).join("");
 
       logDiv.innerHTML += `
         <div class="card">
@@ -833,27 +829,34 @@
             <div class="stat-pill">DNP <span>${dnp}</span></div>
           </div>
           <div class="grid-header">
-            <div class="col-name">Player</div>
-            <div>DNP</div>
-            <div>Paid</div>
+            <div class="col-name">Player</div><div>DNP</div><div>Paid</div>
           </div>
           ${rows}
           <button class="delete-btn" onclick="deleteGame('${id}')">🗑 Delete Game</button>
-        </div>
-      `;
+        </div>`;
     });
   }
 
-  /* ── Delete ── */
   window.deleteGame = async function (id) {
     if (!confirm("Delete this game? This cannot be undone.")) return;
     await deleteDoc(doc(db, "games", id));
     loadLogs();
   };
 
-  /* ── On load: show latest saved game in home summary ── */
+  /* ════════════════════════════════════
+     HELPERS
+  ════════════════════════════════════ */
+  function fmtDate(iso) {
+    if (!iso) return "—";
+    const [y, m, d] = iso.split("-");
+    return new Date(+y, +m-1, +d).toLocaleDateString("en-SG", {
+      weekday:"short", day:"numeric", month:"short", year:"numeric"
+    });
+  }
+
+  /* ── On load: show latest saved game ── */
   (async () => {
-    const snapshot = await getDocs(query(collection(db, "games"), orderBy("date", "desc")));
+    const snapshot = await getDocs(query(collection(db, "games"), orderBy("date","desc")));
     if (!snapshot.empty) {
       const latest = snapshot.docs[0];
       showHomeSummary(latest.data(), latest.id);
